@@ -1,3 +1,9 @@
+node_modules/
+*.log
+.env
+dist/
+coverage/
+.DS_Store
 # Logs
 logs
 *.log
