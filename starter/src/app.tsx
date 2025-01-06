@@ -57,7 +57,7 @@ const App = () => {
   }, []);
   return (
     <APIProvider
-      apiKey={"AIzaSyCeXIbYlLppTcbSrZwli8SaO6vBYrA35PQ"}
+      apiKey={""}
       library={["places"]}
       onLoad={() => console.log("Maps API has loaded.")}
     >
