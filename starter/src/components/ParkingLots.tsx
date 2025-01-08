@@ -4,9 +4,9 @@ import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, push, set, get, query, orderByChild, equalTo } from 'firebase/database';
 import axios from 'axios';
 
-// Firebase configuration
+// Firebase configuration change to your config
 const firebaseConfig = {
-  apiKey: "AIzaSjbsjfvbbfkbkbiubgkgbiugfbsibls",
+  apiKey: "APzaSjbsjfvbbfkbkbiubgkgbiugfbsibls",
   authDomain: "your-app.firebaseapp.com",
   databaseURL: "https://yourapp-67364s-default-db.firebaseio.com/",
   projectId: "yourapp-67364s",
