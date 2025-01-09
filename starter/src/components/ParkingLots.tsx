@@ -6,13 +6,13 @@ import axios from 'axios';
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "replace",
-  authDomain: "replace",
-  databaseURL: "replace",
-  projectId: "replace",
-  storageBucket: "replace",
-  messagingSenderId: "replace",
-  appId: "replace",
+  apiKey: "AIzaSyAYGCeiwywP5LveenGYeDH6GfR181c2st0",
+  authDomain: "bootwatcher-82f5d.firebaseapp.com",
+  databaseURL: "https://bootwatcher-82f5d-default-rtdb.firebaseio.com/",
+  projectId: "bootwatcher-82f5d",
+  storageBucket: "bootwatcher-82f5d.firebasestorage.app",
+  messagingSenderId: "1007091338240",
+  appId: "1:1007091338240:web:f8d830cc8a4e05b3e55ce5",
 };
 
 // Initialize Firebase
@@ -190,6 +190,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
   };
 
   const handleSendNotification = () => {
+    console.log({ selectedPoi })
     if (selectedPoi) {
       const phoneNumbersRef = query(
         ref(database, 'phoneNumbers'),
@@ -210,7 +211,8 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
 
             axios
               .post(TWILIO_URL, {
-                message: `Notification from ${selectedPoi.name || 'Parking Lot'}`,
+                message: "Your car is being booted!",
+                // message: `Notification from ${selectedPoi.name || 'Parking Lot'}`,
                 parkingLot: selectedPoi.name || 'Unknown',
                 phoneNumbers,
               })
