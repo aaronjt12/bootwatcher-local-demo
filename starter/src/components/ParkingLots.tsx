@@ -2,17 +2,18 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { AdvancedMarker, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, push, set, get, query, orderByChild, equalTo } from 'firebase/database';
+import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import axios from 'axios';
 
-// Firebase configuration change to your config
+// Firebase configuration (replace with your Firebase project details)
 const firebaseConfig = {
-  apiKey: "APzaSjbsjfvbbfkbkbiubgkgbiugfbsibls",
-  authDomain: "your-app.firebaseapp.com",
-  databaseURL: "https://yourapp-67364s-default-db.firebaseio.com/",
-  projectId: "yourapp-67364s",
-  storageBucket: "yourapp-67364s.firebasestorage.app",
-  messagingSenderId: "734643782828829",
-  appId: "7:75324264673628:web:f7867r76eftfd76v6",
+  apiKey: "AIzaSyAYGCeiwywP5LveenGYeDH6GfR181c2st0",
+  authDomain: "bootwatcher-82f5d.firebaseapp.com",
+  databaseURL: "https://bootwatcher-82f5d-default-rtdb.firebaseio.com/",
+  projectId: "bootwatcher-82f5d",
+  storageBucket: "bootwatcher-82f5d.firebasestorage.app",
+  messagingSenderId: "1007091338240",
+  appId: "1:1007091338240:web:f8d830cc8a4e05b3e55ce5",
 };
 
 // Initialize Firebase
@@ -29,10 +30,10 @@ type Poi = {
   name?: string;
 };
 
-// Twilio configuration
+// Twilio configuration (Local server for testing)
 const TWILIO_URL = "http://localhost:3000/send-sms";
 
-// ParkingLots component
+// ParkingLots component that fetches nearby parking lots
 const ParkingLots = ({ userLocation }) => {
   const map = useMap();
   const placesLib = useMapsLibrary('places');
@@ -70,7 +71,7 @@ const ParkingLots = ({ userLocation }) => {
 };
 
 // Popup Component
-const Popup = ({ poi, notificationCount, onClose, onReceiveNotifications, onSendNotification }) => (
+const Popup = ({ poi, onClose, onReceiveNotifications, onSendNotification }) => (
   <div
     style={{
       position: 'absolute',
@@ -84,7 +85,6 @@ const Popup = ({ poi, notificationCount, onClose, onReceiveNotifications, onSend
     }}
   >
     <h3>{poi.name || 'Parking Lot'}</h3>
-    <p>Notifications Sent in the Last Hour: {notificationCount}</p>
     <button onClick={onReceiveNotifications}>Receive Notifications</button>
     <button onClick={onSendNotification}>Send Notification</button>
     <button onClick={onClose}>Close</button>
@@ -137,36 +137,9 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
   const [markers, setMarkers] = useState<{ [key: string]: google.maps.Marker }>({});
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null);
   const [showPhonePopup, setShowPhonePopup] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
 
   const handleClick = useCallback((poi: Poi) => {
     setSelectedPoi(poi);
-
-    const oneHourAgo = Date.now() - 3600000; // One hour in milliseconds
-
-    const phoneNumbersRef = query(
-      ref(database, 'phoneNumbers'),
-      orderByChild('parkingLot'),
-      equalTo(poi.name || 'Unknown')
-    );
-
-    get(phoneNumbersRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const filteredData = Object.values(data).filter((entry: any) => {
-            const entryTimestamp = new Date(entry.timestamp).getTime();
-            return entryTimestamp >= oneHourAgo;
-          });
-          setNotificationCount(filteredData.length);
-        } else {
-          setNotificationCount(0);
-        }
-      })
-      .catch((error) => {
-        console.error('Error fetching notification count:', error);
-        setNotificationCount(0);
-      });
   }, []);
 
   const handlePhoneSave = (phoneNumber) => {
@@ -196,22 +169,22 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
         orderByChild('parkingLot'),
         equalTo(selectedPoi.name || 'Unknown')
       );
-
+  
       get(phoneNumbersRef)
         .then((snapshot) => {
           if (snapshot.exists()) {
             const data = snapshot.val();
             const phoneNumbers = Object.values(data).map((entry: any) => entry.phoneNumber);
-
+  
             if (phoneNumbers.length === 0) {
               alert('No phone numbers found for this parking lot.');
               return;
             }
-
-            axios
+  
+            // Send phone numbers and message to the backend
+      axios
               .post(TWILIO_URL, {
                 message: `Notification from ${selectedPoi.name || 'Parking Lot'}`,
-                parkingLot: selectedPoi.name || 'Unknown',
                 phoneNumbers,
               })
               .then(() => {
@@ -229,6 +202,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
         });
     }
   };
+  
 
   const setMarkerRef = (marker: google.maps.Marker | null, key: string) => {
     if (marker && markers[key]) return;
@@ -259,13 +233,14 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
         </AdvancedMarker>
       ))}
       {selectedPoi && (
+        <>
         <Popup
           poi={selectedPoi}
-          notificationCount={notificationCount}
           onClose={() => setSelectedPoi(null)}
           onReceiveNotifications={() => setShowPhonePopup(true)}
           onSendNotification={handleSendNotification}
         />
+        </>
       )}
       {showPhonePopup && (
         <PhoneNumberPopup
