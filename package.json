@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
-    "start-backend": "cd backend && npm start",
+    "start-backend": "cd twilio-sms-server && npm start",
     "start-frontend": "cd starter && npm start"
   },
   "keywords": [],
@@ -23,6 +23,7 @@
     "axios": "^1.7.9",
     "bootwatcher-maps-platform-101-react": "file:",
     "cors": "^2.8.5",
+    "dompurify": "^3.2.3",
     "dotenv": "^16.4.7",
     "firebase": "^11.1.0",
     "firebase-admin": "^13.0.2",
