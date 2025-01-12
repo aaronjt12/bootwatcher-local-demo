@@ -1,18 +1,34 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { AdvancedMarker, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
-import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, push, set, get, query, orderByChild, equalTo } from 'firebase/database';
-import axios from 'axios';
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  AdvancedMarker,
+  useMap,
+  useMapsLibrary,
+} from "@vis.gl/react-google-maps";
+import { initializeApp } from "firebase/app";
+import {
+  getDatabase,
+  ref,
+  push,
+  set,
+  get,
+  query,
+  orderByChild,
+  equalTo,
+} from "firebase/database";
+import axios from "axios";
 
 // Firebase configuration
+
 const firebaseConfig = {
- 
-
-
-
-  
+  apiKey: import.meta.env.VITE_API_KEY,
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_DATABASE_URL,
+  projectId: import.meta.env.VITE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_APP_ID,
 };
-
+console.log("firebaseConfig", firebaseConfig);
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
@@ -33,18 +49,21 @@ const TWILIO_URL = "http://localhost:3000/send-sms";
 // ParkingLots component
 const ParkingLots = ({ userLocation }) => {
   const map = useMap();
-  const placesLib = useMapsLibrary('places');
+  const placesLib = useMapsLibrary("places");
   const [parkingLots, setParkingLots] = useState<Poi[]>([]);
 
   useEffect(() => {
     if (!placesLib || !map) return;
 
     const svc = new placesLib.PlacesService(map);
-    const location = new window.google.maps.LatLng(userLocation.lat, userLocation.lng);
+    const location = new window.google.maps.LatLng(
+      userLocation.lat,
+      userLocation.lng
+    );
     const request = {
       location,
       radius: 3000,
-      type: 'parking',
+      type: "parking",
     };
 
     svc.nearbySearch(request, (results, status) => {
@@ -59,7 +78,7 @@ const ParkingLots = ({ userLocation }) => {
         }));
         setParkingLots(locations);
       } else {
-        console.error('Nearby search failed:', status);
+        console.error("Nearby search failed:", status);
       }
     });
   }, [placesLib, map]);
@@ -68,20 +87,26 @@ const ParkingLots = ({ userLocation }) => {
 };
 
 // Popup Component
-const Popup = ({ poi, notificationCount, onClose, onReceiveNotifications, onSendNotification }) => (
+const Popup = ({
+  poi,
+  notificationCount,
+  onClose,
+  onReceiveNotifications,
+  onSendNotification,
+}) => (
   <div
     style={{
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      backgroundColor: 'white',
-      border: '1px solid #ccc',
-      padding: '16px',
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      backgroundColor: "white",
+      border: "1px solid #ccc",
+      padding: "16px",
       zIndex: 1000,
     }}
   >
-    <h3>{poi.name || 'Parking Lot'}</h3>
+    <h3>{poi.name || "Parking Lot"}</h3>
     <p>Notifications Sent in the Last Hour: {notificationCount}</p>
     <button onClick={onReceiveNotifications}>Receive Notifications</button>
     <button onClick={onSendNotification}>Send Notification</button>
@@ -91,12 +116,12 @@ const Popup = ({ poi, notificationCount, onClose, onReceiveNotifications, onSend
 
 // Phone Number Input Popup
 const PhoneNumberPopup = ({ onSave, onClose }) => {
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const handleSave = () => {
     const phoneRegex = /^[0-9]{10}$/; // Adjust for international numbers if needed
     if (!phoneRegex.test(phoneNumber)) {
-      alert('Please enter a valid phone number.');
+      alert("Please enter a valid phone number.");
       return;
     }
     onSave(phoneNumber);
@@ -106,13 +131,13 @@ const PhoneNumberPopup = ({ onSave, onClose }) => {
   return (
     <div
       style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        backgroundColor: 'white',
-        border: '1px solid #ccc',
-        padding: '16px',
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        backgroundColor: "white",
+        border: "1px solid #ccc",
+        padding: "16px",
         zIndex: 1000,
       }}
     >
@@ -132,7 +157,9 @@ const PhoneNumberPopup = ({ onSave, onClose }) => {
 // PoiMarkers component to render the markers
 const PoiMarkers = (props: { pois: Poi[] }) => {
   const map = useMap();
-  const [markers, setMarkers] = useState<{ [key: string]: google.maps.Marker }>({});
+  const [markers, setMarkers] = useState<{ [key: string]: google.maps.Marker }>(
+    {}
+  );
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null);
   const [showPhonePopup, setShowPhonePopup] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -143,9 +170,9 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
     const oneHourAgo = Date.now() - 3600000; // One hour in milliseconds
 
     const phoneNumbersRef = query(
-      ref(database, 'phoneNumbers'),
-      orderByChild('parkingLot'),
-      equalTo(poi.name || 'Unknown')
+      ref(database, "phoneNumbers"),
+      orderByChild("parkingLot"),
+      equalTo(poi.name || "Unknown")
     );
 
     get(phoneNumbersRef)
@@ -162,7 +189,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
         }
       })
       .catch((error) => {
-        console.error('Error fetching notification count:', error);
+        console.error("Error fetching notification count:", error);
         setNotificationCount(0);
       });
   }, []);
@@ -172,38 +199,40 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
       const timestamp = new Date().toISOString();
       const phoneData = {
         phoneNumber,
-        parkingLot: selectedPoi.name || 'Unknown',
+        parkingLot: selectedPoi.name || "Unknown",
         timestamp,
       };
 
-      const newPhoneRef = push(ref(database, 'phoneNumbers'));
+      const newPhoneRef = push(ref(database, "phoneNumbers"));
       set(newPhoneRef, phoneData)
         .then(() => {
-          console.log('Phone number saved successfully');
+          console.log("Phone number saved successfully");
         })
         .catch((error) => {
-          console.error('Error saving phone number:', error);
+          console.error("Error saving phone number:", error);
         });
     }
   };
 
   const handleSendNotification = () => {
-    console.log({ selectedPoi })
+    console.log({ selectedPoi });
     if (selectedPoi) {
       const phoneNumbersRef = query(
-        ref(database, 'phoneNumbers'),
-        orderByChild('parkingLot'),
-        equalTo(selectedPoi.name || 'Unknown')
+        ref(database, "phoneNumbers"),
+        orderByChild("parkingLot"),
+        equalTo(selectedPoi.name || "Unknown")
       );
 
       get(phoneNumbersRef)
         .then((snapshot) => {
           if (snapshot.exists()) {
             const data = snapshot.val();
-            const phoneNumbers = Object.values(data).map((entry: any) => entry.phoneNumber);
+            const phoneNumbers = Object.values(data).map(
+              (entry: any) => entry.phoneNumber
+            );
 
             if (phoneNumbers.length === 0) {
-              alert('No phone numbers found for this parking lot.');
+              alert("No phone numbers found for this parking lot.");
               return;
             }
 
@@ -211,21 +240,21 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
               .post(TWILIO_URL, {
                 message: "Your car is being booted!",
                 // message: `Notification from ${selectedPoi.name || 'Parking Lot'}`,
-                parkingLot: selectedPoi.name || 'Unknown',
+                parkingLot: selectedPoi.name || "Unknown",
                 phoneNumbers,
               })
               .then(() => {
-                alert('Notification sent successfully!');
+                alert("Notification sent successfully!");
               })
               .catch((error) => {
-                console.error('Error sending notification:', error);
+                console.error("Error sending notification:", error);
               });
           } else {
-            alert('No phone numbers found for this parking lot.');
+            alert("No phone numbers found for this parking lot.");
           }
         })
         .catch((error) => {
-          console.error('Error fetching phone numbers:', error);
+          console.error("Error fetching phone numbers:", error);
         });
     }
   };
@@ -255,7 +284,12 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
           clickable={true}
           onClick={() => handleClick(poi)}
         >
-          <img src={'/public/images/parking_7723653.png'} width={34} height={34} title="Parking lots" />
+          <img
+            src={"/public/images/parking_7723653.png"}
+            width={34}
+            height={34}
+            title="Parking lots"
+          />
         </AdvancedMarker>
       ))}
       {selectedPoi && (

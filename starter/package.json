@@ -3,8 +3,10 @@
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.5.1",
     "@vis.gl/react-google-maps": "latest",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "axios": "^1.7.9",
+    "firebase": "^11.1.0",
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "scripts": {
     "start": "vite",
@@ -15,10 +17,8 @@
     "concurrently": "^9.1.2",
     "vite": "^6.0.7"
   },
-
   "peerDependencies": {
-  "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-  "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
-}
-
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+  }
 }
