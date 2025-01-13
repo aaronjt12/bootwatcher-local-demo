@@ -11,24 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16 # Ensure this matches your project's Node.js version
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build the project
-        run: npm ci
-working-directory: ./starter
-run-build: Build
-run: npm run build working-directory: ./starter
-      
+      - run: npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BOOT_WATCHER }}
           channelId: live
-          entryPoint: .
           projectId: boot-watcher
