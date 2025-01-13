@@ -1,5 +1,5 @@
 {
-  "name": "bootwatcher-maps-platform-101-react",
+  "name": "bootwatcher-local-demo",
   "version": "1.0.0",
   "description": "## Description This repo contains the project template and finished code for the [Google Maps Platform 101: React codelab](https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js).",
   "main": "index.js",
@@ -9,7 +9,7 @@
     "start-frontend": "cd starter && npm start"
   },
   "keywords": [],
-  "author": "",
+  "author": "aaron",
   "license": "ISC",
   "devDependencies": {
     "concurrently": "^9.1.2",
@@ -29,5 +29,13 @@
     "firebase-admin": "^13.0.2",
     "firebase-functions": "^6.2.0",
     "styled-components": "^6.1.14"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aaronjt12/bootwatcher-local-demo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aaronjt12/bootwatcher-local-demo/issues"
+  },
+  "homepage": "https://github.com/aaronjt12/bootwatcher-local-demo#readme"
 }
