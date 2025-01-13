@@ -16,7 +16,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-        working-directory: ./Users/user
+        working-directory: ./Users/user/bootwatcher-local-demo
 
       - name: Build the project
         run: npm run build
