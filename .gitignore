@@ -139,3 +139,4 @@ dist
 .codegpt
 
 .env
+node_modules
