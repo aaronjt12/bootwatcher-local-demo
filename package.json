@@ -4,10 +4,9 @@
   "description": "## Description This repo contains the project template and finished code for the [Google Maps Platform 101: React codelab](https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js).",
   "main": "index.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
+    "start-backend": "cd twilio-sms-server && npm start",
+    "start-frontend": "cd starter && npm start"
   },
   "keywords": [],
   "author": "",
