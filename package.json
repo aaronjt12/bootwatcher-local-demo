@@ -1,7 +1,7 @@
 {
   "name": "bootwatcher-local-demo",
   "version": "1.0.0",
-  "description": "## Description This repo contains the project template and finished code for the [Google Maps Platform 101: React codelab](https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js).",
+  "description": "Description This repo contains the project template and finished code for the [Google Maps Platform 101: React codelab](https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js).",
   "main": "index.js",
   "scripts": {
     "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
