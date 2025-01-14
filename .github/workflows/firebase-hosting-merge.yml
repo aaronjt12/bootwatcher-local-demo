@@ -1,34 +1,39 @@
-name: Deploy to Firebase Hosting on merge
+name: Deploy App
+
 on:
   push:
     branches:
       - master
-jobs:
-  build_and_deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      # Install dependencies in the root folder
-      - run: npm install concurrently --save-dev
-      
-      # Install dependencies in the 'starter' folder (frontend)
-      - run: |
-          cd starter
-          npm install
-      
-      # Install dependencies in the 'twilio-sms-server' folder (backend)
-      - run: |
-          cd twilio-sms-server
-          npm install
-      
-      # Start the services
-      - run: npm start
-      
-      # Deploy to Firebase Hosting
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BOOT_WATCHER }}
-          channelId: live
-          projectId: boot-watcher
+          node-version: 16
+
+      # Step 3: Install and run SMS Server (Twilio SMS Server)
+      - name: Install Server Dependencies
+        working-directory: twilio-sms-server
+        run: |
+          npm install
+
+      - name: Start Server
+        working-directory: twilio-sms-server
+        run: |
+          npm start
+
+      # Step 4: Install and build Starter (Client)
+      - name: Install and build Client
+        working-directory: starter
+        run: |
+          npm install
+          npm run build
