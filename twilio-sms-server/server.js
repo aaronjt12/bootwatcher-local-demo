@@ -18,6 +18,7 @@ const serviceAccount = {
   auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_CERT_URL,
   client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
 };
+const test = process.env.ORIGIN_URL;
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
@@ -39,9 +40,8 @@ const client = twilio(twilioApiKeySid, twilioApiKeySecret, {
 
 const app = express();
 const database = admin.database();
-
 // Middleware
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: process.env.ORIGIN_URL }));
 app.use(express.json()); // Parse JSON request bodies
 
 // // Endpoint: Send SMS using Twilio
