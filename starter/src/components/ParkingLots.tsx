@@ -44,7 +44,7 @@ type Poi = {
 };
 
 // Twilio configuration
-const TWILIO_URL = "http://localhost:3000/send-sms";
+const TWILIO_URL = `${import.meta.env.VITE_MAPS_API_KEY}/send-sms`;
 
 // ParkingLots component
 const ParkingLots = ({ userLocation }) => {
