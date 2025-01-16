@@ -44,8 +44,7 @@ type Poi = {
 };
 
 // Twilio configuration
-const TWILIO_URL = `${import.meta.env.VITE_MAPS_API_KEY}/send-sms`;
-
+const TWILIO_URL = `${import.meta.env.VITE_BACKEND_URL}/send-sms`;
 // ParkingLots component
 const ParkingLots = ({ userLocation }) => {
   const map = useMap();
@@ -285,7 +284,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
           onClick={() => handleClick(poi)}
         >
           <img
-            src={"/public/images/parking_7723653.png"}
+            src={"/images/parking_7723653.png"}
             width={34}
             height={34}
             title="Parking lots"
