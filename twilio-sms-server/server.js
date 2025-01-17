@@ -45,7 +45,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://boot-watcher.vercel.app",
   "https://bootwatcher.com",
-  "https://bootwatcher-local-demo-nobhdndgp-aarons-projects-d1bad5c6.vercel.app",
+  "https://bootwatcher-local-demo-nobhdndgp-aarons-projects-d1bad5c6.vercel.app"
 ];
 
 const corsOptions = {
