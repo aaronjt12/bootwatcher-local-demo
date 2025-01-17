@@ -40,8 +40,27 @@ const client = twilio(twilioApiKeySid, twilioApiKeySecret, {
 
 const app = express();
 const database = admin.database();
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://boot-watcher.vercel.app",
+  "https://bootwatcher.com",
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Check if the origin is in the allowed list or if there is no origin (like in some cases of server-to-server requests)
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true, // Allow credentials (cookies, authorization headers, TLS client certificates)
+};
 // Middleware
-app.use(cors({ origin: process.env.ORIGIN_URL }));
+app.use(cors(corsOptions));
 app.use(express.json()); // Parse JSON request bodies
 
 // // Endpoint: Send SMS using Twilio
