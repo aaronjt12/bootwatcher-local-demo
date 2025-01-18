@@ -107,7 +107,7 @@ const Popup = ({
     }}
   >
     <h3>{poi.name || "Parking Lot"}</h3>
-    <p>Notifications Sent in the Last Hour: {notificationCount}</p>
+    <p>Cars booted in the last 7 days: {notificationCount}</p>
     <button onClick={onReceiveNotifications}>Receive Notifications</button>
     <button onClick={onSendNotification}>Send Notification</button>
     <button onClick={onClose}>Close</button>
@@ -167,7 +167,8 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
   const handleClick = useCallback((poi: Poi) => {
     setSelectedPoi(poi);
 
-    const oneHourAgo = Date.now() - 3600000; // One hour in milliseconds
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
 
     const phoneNumbersRef = query(
       ref(database, "phoneNumbers"),
@@ -181,7 +182,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
           const data = snapshot.val();
           const filteredData = Object.values(data).filter((entry: any) => {
             const entryTimestamp = new Date(entry.timestamp).getTime();
-            return entryTimestamp >= oneHourAgo;
+            return entryTimestamp >= sevenDaysAgo;
           });
           setNotificationCount(filteredData.length);
         } else {
