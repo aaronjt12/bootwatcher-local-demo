@@ -1,4 +1,3 @@
-//comment
 import React, { useEffect, useState, useCallback } from "react";
 import {
   AdvancedMarker,
@@ -19,7 +18,6 @@ import {
 import axios from "axios";
 
 // Firebase configuration
-
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
@@ -46,12 +44,16 @@ type Poi = {
 
 // Twilio configuration
 const TWILIO_URL = `${import.meta.env.VITE_BACKEND_URL}/send-sms`;
-// ParkingLots component
+
+// ParkingLots Component
 const ParkingLots = ({ userLocation }) => {
   const map = useMap();
   const placesLib = useMapsLibrary("places");
   const [parkingLots, setParkingLots] = useState<Poi[]>([]);
+  const [customMarkers, setCustomMarkers] = useState<Poi[]>([]);
+  const [isAddingMarker, setIsAddingMarker] = useState(false);
 
+  // Fetch nearby parking lots
   useEffect(() => {
     if (!placesLib || !map) return;
 
@@ -83,8 +85,78 @@ const ParkingLots = ({ userLocation }) => {
     });
   }, [placesLib, map]);
 
-  return <PoiMarkers pois={parkingLots} />;
+  // Load custom markers from Firebase
+  useEffect(() => {
+    const markersRef = ref(database, "customMarkers");
+    get(markersRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const markersData = Object.entries(snapshot.val()).map(([key, value]: [string, any]) => ({
+            key,
+            location: value.location,
+            name: value.name,
+          }));
+          setCustomMarkers(markersData);
+        }
+      })
+      .catch((error) => console.error("Error loading custom markers:", error));
+  }, []);
+
+  // Add custom marker on map click
+  useEffect(() => {
+    if (!map || !isAddingMarker) return;
+
+    const handleMapClick = (e) => {
+      const newMarker = {
+        key: `${Date.now()}`, // Unique key
+        location: { lat: e.latLng.lat(), lng: e.latLng.lng() },
+        name: "Custom Parking",
+      };
+
+      // Save to Firebase
+      const markerRef = push(ref(database, "customMarkers"));
+      set(markerRef, newMarker)
+        .then(() => {
+          setCustomMarkers((prev) => [...prev, newMarker]);
+          alert("Custom parking marker added!");
+          setIsAddingMarker(false);
+        })
+        .catch((error) => console.error("Error saving custom marker:", error));
+    };
+
+    map.addListener("click", handleMapClick);
+
+    return () => {
+      window.google.maps.event.clearListeners(map, "click");
+    };
+  }, [map, isAddingMarker]);
+
+  return (
+    <>
+      <button
+        onClick={() => setIsAddingMarker(!isAddingMarker)}
+        style={{
+          position: "absolute",
+          bottom: "20px", // Adjust the vertical position
+          left: "50%", // Center the button horizontally
+          transform: "translateX(-50%)", // Ensure perfect centering
+          padding: "10px 20px",
+          backgroundColor: isAddingMarker ? "red" : "blue",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+          zIndex: 1000, // Ensure it stays above other map elements
+        }}
+      >
+        {isAddingMarker ? "Cancel Add Marker" : "Add Custom Marker"}
+      </button>
+      <PoiMarkers pois={[...parkingLots, ...customMarkers]} />
+    </>
+  );
 };
+
+
 
 // Popup Component
 const Popup = ({
