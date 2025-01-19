@@ -165,6 +165,7 @@ const Popup = ({
   onClose,
   onReceiveNotifications,
   onSendNotification,
+  onDeleteMarker,
 }) => (
   <div
     style={{
@@ -175,17 +176,75 @@ const Popup = ({
       backgroundColor: "white",
       border: "1px solid #ccc",
       padding: "16px",
+      borderRadius: "8px",
       zIndex: 1000,
     }}
   >
     <h3>{poi.name || "Parking Lot"}</h3>
     <p>Cars booted in the last 7 days: {notificationCount}</p>
-    <button onClick={onReceiveNotifications}>Receive Notifications</button>
-    <button onClick={onSendNotification}>Send Notification</button>
-    <button onClick={onClose}>Close</button>
+    <button
+      onClick={onReceiveNotifications}
+      style={{
+        padding: "8px 16px",
+        backgroundColor: "#007bff",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "pointer",
+        marginRight: "8px",
+      }}
+    >
+      Receive Notifications
+    </button>
+    <button
+      onClick={onSendNotification}
+      style={{
+        padding: "8px 16px",
+        backgroundColor: "#28a745",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "pointer",
+        marginRight: "8px",
+      }}
+    >
+      Send Notification
+    </button>
+    {/* Add delete button for custom markers */}
+    {poi.name === "Custom Parking" && (
+      <button
+        onClick={() => {
+          onDeleteMarker(poi.key); // Call delete function
+          onClose(); // Close the popup after deletion
+        }}
+        style={{
+          padding: "8px 16px",
+          backgroundColor: "#dc3545", // Similar to Bootstrap danger button
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+      >
+        Delete Marker
+      </button>
+    )}
+    <button
+      onClick={onClose}
+      style={{
+        padding: "8px 16px",
+        backgroundColor: "#6c757d",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "pointer",
+        marginTop: "8px",
+      }}
+    >
+      Close
+    </button>
   </div>
 );
-
 // Phone Number Input Popup
 const PhoneNumberPopup = ({ onSave, onClose }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -226,7 +285,7 @@ const PhoneNumberPopup = ({ onSave, onClose }) => {
   );
 };
 
-// PoiMarkers component to render the markers
+// PoiMarkers Component
 const PoiMarkers = (props: { pois: Poi[] }) => {
   const map = useMap();
   const [markers, setMarkers] = useState<{ [key: string]: google.maps.Marker }>(
@@ -239,8 +298,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
   const handleClick = useCallback((poi: Poi) => {
     setSelectedPoi(poi);
 
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-
+    const sevenDaysAgo = Date.now() - 604800000; // 7 days in milliseconds
 
     const phoneNumbersRef = query(
       ref(database, "phoneNumbers"),
@@ -288,7 +346,6 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
   };
 
   const handleSendNotification = () => {
-    console.log({ selectedPoi });
     if (selectedPoi) {
       const phoneNumbersRef = query(
         ref(database, "phoneNumbers"),
@@ -312,7 +369,6 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
             axios
               .post(TWILIO_URL, {
                 message: "Your car is being booted!",
-                // message: `Notification from ${selectedPoi.name || 'Parking Lot'}`,
                 parkingLot: selectedPoi.name || "Unknown",
                 phoneNumbers,
               })
@@ -330,6 +386,20 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
           console.error("Error fetching phone numbers:", error);
         });
     }
+  };
+
+  const handleDelete = (key) => {
+    const markerRef = ref(database, `customMarkers/${key}`);
+    set(markerRef, null)
+      .then(() => {
+        alert("Custom marker deleted successfully");
+        setMarkers((prev) => {
+          const updatedMarkers = { ...prev };
+          delete updatedMarkers[key];
+          return updatedMarkers;
+        });
+      })
+      .catch((error) => console.error("Error deleting marker:", error));
   };
 
   const setMarkerRef = (marker: google.maps.Marker | null, key: string) => {
@@ -357,12 +427,23 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
           clickable={true}
           onClick={() => handleClick(poi)}
         >
-          <img
-            src={"/images/parking_7723653.png"}
-            width={34}
-            height={34}
-            title="Parking lots"
-          />
+          <div>
+            <img
+              src={
+                poi.name === "Custom Parking"
+                  ? "/images/parking_7723653.png"
+                  : "/images/parking_7723653.png"
+              }
+              width={34}
+              height={34}
+              title={poi.name || "Parking lots"}
+              alt={
+                poi.name === "Custom Parking"
+                  ? "Custom Marker"
+                  : "Parking Lot Marker"
+              }
+            />
+          </div>
         </AdvancedMarker>
       ))}
       {selectedPoi && (
@@ -372,6 +453,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
           onClose={() => setSelectedPoi(null)}
           onReceiveNotifications={() => setShowPhonePopup(true)}
           onSendNotification={handleSendNotification}
+          onDeleteMarker={handleDelete} // Pass delete function to Popup
         />
       )}
       {showPhonePopup && (
