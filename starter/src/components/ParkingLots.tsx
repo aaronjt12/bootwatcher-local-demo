@@ -140,8 +140,8 @@ const ParkingLots = ({ userLocation }) => {
           position: "absolute",
           top: "20px", // Adjust the vertical position
           right: "2%", // Center the button horizontally
-          transform: "translateX(-50%)", // Ensure perfect centering
-          padding: "10px 20px",
+          
+          padding: "5px 5px",
           backgroundColor: isAddingMarker ? "red" : "blue",
           color: "white",
           border: "none",
