@@ -17,6 +17,7 @@ import {
 } from "firebase/database";
 import axios from "axios";
 
+
 // Firebase configuration
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
@@ -137,8 +138,8 @@ const ParkingLots = ({ userLocation }) => {
         onClick={() => setIsAddingMarker(!isAddingMarker)}
         style={{
           position: "absolute",
-          bottom: "20px", // Adjust the vertical position
-          left: "50%", // Center the button horizontally
+          top: "20px", // Adjust the vertical position
+          right: "2%", // Center the button horizontally
           transform: "translateX(-50%)", // Ensure perfect centering
           padding: "10px 20px",
           backgroundColor: isAddingMarker ? "red" : "blue",
