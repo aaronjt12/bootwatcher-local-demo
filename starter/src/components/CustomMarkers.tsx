@@ -92,7 +92,7 @@ const CustomMarkers = () => {
         style={{
           position: "absolute",
           top: "10px",
-          left: "10px",
+          right: "10px",
           padding: "10px 20px",
           backgroundColor: isAddingMarker ? "red" : "blue",
           color: "white",
