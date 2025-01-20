@@ -17,7 +17,6 @@ import {
 } from "firebase/database";
 import axios from "axios";
 
-
 // Firebase configuration
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
