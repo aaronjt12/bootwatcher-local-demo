@@ -1,0 +1,12 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd starter && npm install && npm run build"
+
+[deploy]
+startCommand = "cd starter && npm run preview"
+healthcheckPath = "/"
+healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+
+[deploy.envs]
+NODE_ENV = "production" 
