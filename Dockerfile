@@ -19,10 +19,28 @@ RUN npm install --legacy-peer-deps --verbose
 ENV NODE_ENV=production
 ENV VITE_GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
 
-# Build the app with verbose output
-RUN npm run build --verbose && \
-    echo "Build completed. Contents of /app/dist:" && \
-    ls -la dist/ || (echo "Build failed. Node version:" && node -v && npm -v && exit 1)
+# Debug TypeScript configuration
+RUN echo "TypeScript Config:" && cat tsconfig.json || echo "No tsconfig.json found"
+
+# Debug Vite configuration
+RUN echo "Vite Config:" && cat vite.config.js || echo "No vite.config.js found"
+
+# Build the app with detailed error logging
+RUN echo "Starting build process..." && \
+    echo "Node version: $(node -v)" && \
+    echo "NPM version: $(npm -v)" && \
+    npm run build --verbose || { \
+        echo "Build failed. Checking for common issues:"; \
+        echo "1. Package.json contents:"; \
+        cat package.json; \
+        echo "2. Node modules:"; \
+        ls -la node_modules; \
+        echo "3. Environment variables:"; \
+        env | grep VITE_; \
+        echo "4. Build logs:"; \
+        npm run build --verbose; \
+        exit 1; \
+    }
 
 # Production stage
 FROM nginx:alpine

@@ -17,7 +17,7 @@ import {defineConfig, loadEnv} from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({mode}) => {
-  const {GOOGLE_MAPS_API_KEY = ''} = loadEnv(mode, process.cwd(), '');
+  const env = loadEnv(mode, process.cwd(), 'VITE_');
 
   return {
     plugins: [react()],
@@ -28,7 +28,7 @@ export default defineConfig(({mode}) => {
       target: 'es2015'
     },
     define: {
-      'process.env.GOOGLE_MAPS_API_KEY': JSON.stringify(GOOGLE_MAPS_API_KEY),
+      'process.env': JSON.stringify(env),
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
     },
     resolve: {
