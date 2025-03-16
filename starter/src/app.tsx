@@ -14,32 +14,27 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import {
   APIProvider,
   Map,
-  useMap,
   AdvancedMarker,
   MapCameraChangedEvent,
-  Pin,
 } from "@vis.gl/react-google-maps";
 
-import { MarkerClusterer } from "@googlemaps/markerclusterer";
-import type { Marker } from "@googlemaps/markerclusterer";
-
-import { Circle } from "./components/circle";
 import ParkingLots from "./components/ParkingLots";
 import NoLocationFound from "./components/NoLocationFound";
 
-
-
-type Poi = { key: string; location: google.maps.LatLngLiteral };
+interface Location {
+  lat: number;
+  lng: number;
+}
 
 const App = () => {
-  const [userLocation, setUserLocation] = useState(null);
-  // Get the user's current location using geolocation API
+  const [userLocation, setUserLocation] = useState<Location | null>(null);
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -56,6 +51,15 @@ const App = () => {
     }
   }, []);
 
+  const handleCameraChange = (ev: { detail: MapCameraChangedEvent }) => {
+    console.log(
+      "camera changed:",
+      ev.detail.center,
+      "zoom:",
+      ev.detail.zoom
+    );
+  };
+
   return (
     <APIProvider
       apiKey={import.meta.env.VITE_MAPS_API_KEY}
@@ -66,28 +70,18 @@ const App = () => {
         <Map
           defaultZoom={13}
           defaultCenter={userLocation}
-          onCameraChanged={(ev: MapCameraChangedEvent) =>
-            console.log(
-              "camera changed:",
-              ev.detail.center,
-              "zoom:",
-              ev.detail.zoom
-            )
-          }
+          onCameraChanged={handleCameraChange}
           mapId="da37f3254c6a6d1c"
         >
           <AdvancedMarker position={userLocation}>
             <img
-              src={"/images/pin_8668861.png"}
+              src="/images/pin_8668861.png"
               width={34}
               height={34}
               title="Current Location"
             />
           </AdvancedMarker>
-          {/* load marking lots */}
           <ParkingLots userLocation={userLocation} />
-
-          {/* <PoiMarkers pois={locations} /> */}
         </Map>
       ) : (
         <NoLocationFound />
@@ -98,5 +92,8 @@ const App = () => {
 
 export default App;
 
-const root = createRoot(document.getElementById("app"));
-root.render(<App />);
+const container = document.getElementById("app");
+if (container) {
+  const root = createRoot(container);
+  root.render(<App />);
+}

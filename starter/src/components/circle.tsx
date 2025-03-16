@@ -23,7 +23,7 @@ import {
 } from 'react';
 
 import type {Ref} from 'react';
-import {GoogleMapsContext, latLngEquals} from '@vis.gl/react-google-maps';
+import {GoogleMapsContext} from '@vis.gl/react-google-maps';
 
 type CircleEventProps = {
   onClick?: (e: google.maps.MapMouseEvent) => void;
@@ -75,13 +75,20 @@ function useCircle(props: CircleProps) {
 
   useEffect(() => {
     if (!center) return;
-    if (!latLngEquals(center, circle.getCenter())) circle.setCenter(center);
-  }, [center]);
+    const currentCenter = circle.getCenter();
+    if (currentCenter) {
+      const currentLat = currentCenter.lat();
+      const currentLng = currentCenter.lng();
+      if (currentLat !== center.lat || currentLng !== center.lng) {
+        circle.setCenter(center);
+      }
+    }
+  }, [center, circle]);
 
   useEffect(() => {
     if (radius === undefined || radius === null) return;
     if (radius !== circle.getRadius()) circle.setRadius(radius);
-  }, [radius]);
+  }, [radius, circle]);
 
   const map = useContext(GoogleMapsContext)?.map;
 
@@ -99,7 +106,7 @@ function useCircle(props: CircleProps) {
     return () => {
       circle.setMap(null);
     };
-  }, [map]);
+  }, [map, circle]);
 
   // attach and re-attach event-handlers when any of the properties change
   useEffect(() => {
@@ -126,7 +133,9 @@ function useCircle(props: CircleProps) {
     });
     gme.addListener(circle, 'center_changed', () => {
       const newCenter = circle.getCenter();
-      callbacks.current.onCenterChanged?.(newCenter);
+      if (newCenter) {
+        callbacks.current.onCenterChanged?.(newCenter);
+      }
     });
 
     return () => {
