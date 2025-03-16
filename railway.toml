@@ -9,4 +9,5 @@ restartPolicyType = "on_failure"
 numReplicas = 1
 
 [deploy.envs]
-NODE_ENV = "production" 
+NODE_ENV = "production"
+PORT = "3000" 
