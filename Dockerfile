@@ -2,13 +2,16 @@
 FROM node:18-alpine as build
 
 WORKDIR /app
-COPY starter/package*.json ./
+
+# Copy package files first
+COPY starter/package.json ./
+COPY starter/package-lock.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
-# Copy source code
-COPY starter/ .
+# Copy the rest of the application
+COPY starter/ ./
 
 # Build the app
 RUN npm run build
@@ -18,9 +21,8 @@ FROM node:18-alpine
 
 WORKDIR /app
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/package.json .
 
-# Install only production dependencies
+# Install serve for static file serving
 RUN npm install -g serve
 
 EXPOSE 3000

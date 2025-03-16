@@ -1,8 +1,8 @@
-**/node_modules
-**/dist
-**/.git
-**/.env
-**/.env.*
-**/.DS_Store
-**/npm-debug.log
-twilio-sms-server/ 
+.git
+.env
+.env.*
+.DS_Store
+npm-debug.log*
+node_modules
+twilio-sms-server/
+**/dist 
