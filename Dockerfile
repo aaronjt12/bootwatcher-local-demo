@@ -6,14 +6,23 @@ WORKDIR /app
 # Copy the entire starter directory
 COPY starter/ ./
 
-# Install dependencies
-RUN npm install --legacy-peer-deps
+# Debug: Show contents and environment
+RUN echo "Contents of /app:" && \
+    ls -la && \
+    echo "Environment:" && \
+    env
 
-# Build the app
+# Install dependencies with verbose logging
+RUN npm install --legacy-peer-deps --verbose
+
+# Set build environment variables
 ENV NODE_ENV=production
-RUN npm run build && \
+ENV VITE_GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+
+# Build the app with verbose output
+RUN npm run build --verbose && \
     echo "Build completed. Contents of /app/dist:" && \
-    ls -la dist/
+    ls -la dist/ || (echo "Build failed. Node version:" && node -v && npm -v && exit 1)
 
 # Production stage
 FROM nginx:alpine
