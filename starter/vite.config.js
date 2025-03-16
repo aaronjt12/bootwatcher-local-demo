@@ -20,39 +20,28 @@ export default defineConfig(({mode}) => {
   const {GOOGLE_MAPS_API_KEY = ''} = loadEnv(mode, process.cwd(), '');
 
   return {
-    plugins: [
-      react({
-        jsxRuntime: 'automatic',
-        jsxImportSource: 'react'
-      })
-    ],
+    plugins: [react()],
     build: {
       outDir: 'dist',
       sourcemap: true,
-      commonjsOptions: {
-        include: [/node_modules/],
-        transformMixedEsModules: true
-      },
       rollupOptions: {
-        external: ['react/jsx-runtime'],
         output: {
           manualChunks: {
-            'react-vendor': ['react', 'react-dom']
+            vendor: ['react', 'react-dom'],
+            maps: ['@vis.gl/react-google-maps', '@googlemaps/markerclusterer']
           }
         }
       }
     },
     define: {
-      'process.env.GOOGLE_MAPS_API_KEY': JSON.stringify(GOOGLE_MAPS_API_KEY)
+      'process.env.GOOGLE_MAPS_API_KEY': JSON.stringify(GOOGLE_MAPS_API_KEY),
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
     },
     resolve: {
       alias: {
         '@vis.gl/react-google-maps/examples.js':
           'https://visgl.github.io/react-google-maps/scripts/examples.js'
       }
-    },
-    optimizeDeps: {
-      include: ['react', 'react-dom']
     }
   };
 });

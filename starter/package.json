@@ -1,4 +1,7 @@
 {
+  "name": "bootwatcher-frontend",
+  "private": true,
+  "version": "1.0.0",
   "type": "module",
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.5.1",
@@ -11,11 +14,11 @@
     "vite": "^5.0.12"
   },
   "scripts": {
+    "dev": "vite",
     "start": "vite",
-    "start-local": "vite --config ./vite.config.local.js",
-    "build": "NODE_ENV=production vite build",
-    "preview": "vite preview",
-    "vercel-build": "NODE_ENV=production vite build"
+    "build": "vite build",
+    "preview": "vite preview --port $PORT",
+    "vercel-build": "vite build"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
