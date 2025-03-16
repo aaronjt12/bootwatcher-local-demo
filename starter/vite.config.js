@@ -24,16 +24,8 @@ export default defineConfig(({mode}) => {
     build: {
       outDir: 'dist',
       sourcemap: false,
-      chunkSizeWarningLimit: 1000,
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            vendor: ['react', 'react-dom'],
-            firebase: ['firebase/app', 'firebase/database'],
-            maps: ['@vis.gl/react-google-maps', '@googlemaps/markerclusterer']
-          }
-        }
-      }
+      minify: 'esbuild',
+      target: 'es2015'
     },
     define: {
       'process.env.GOOGLE_MAPS_API_KEY': JSON.stringify(GOOGLE_MAPS_API_KEY),

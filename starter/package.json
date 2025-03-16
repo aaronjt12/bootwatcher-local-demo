@@ -16,9 +16,8 @@
   "scripts": {
     "dev": "vite",
     "start": "vite",
-    "build": "vite build",
-    "preview": "vite preview --port $PORT",
-    "vercel-build": "vite build"
+    "build": "vite build --emptyOutDir",
+    "preview": "vite preview --port 3000"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

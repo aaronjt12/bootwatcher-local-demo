@@ -1,10 +1,5 @@
 # Build stage
-FROM node:18-alpine as build
-
-# Set environment variables for build optimization
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-ENV VITE_DISABLE_ESLINT_PLUGIN=true
-ENV NODE_ENV=production
+FROM node:16-alpine as build
 
 WORKDIR /app
 
@@ -12,29 +7,25 @@ WORKDIR /app
 COPY starter/package.json ./
 COPY starter/package-lock.json ./
 
-# Install dependencies with clean npm cache
-RUN npm cache clean --force && \
-    npm install
+# Install dependencies
+RUN npm install --legacy-peer-deps
 
 # Copy the rest of the application
 COPY starter/ ./
 
-# Build the app with specific memory allocation
+# Build the app
+ENV NODE_ENV=production
 RUN npm run build
 
 # Production stage
-FROM node:18-alpine
+FROM nginx:alpine
 
-WORKDIR /app
-COPY --from=build /app/dist ./dist
+# Copy built assets to nginx
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Install serve for static file serving
-RUN npm install -g serve
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 3000
+EXPOSE 80
 
-# Set production environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
-
-CMD ["serve", "-s", "dist", "-l", "3000"] 
+CMD ["nginx", "-g", "daemon off;"] 
