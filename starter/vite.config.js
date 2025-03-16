@@ -23,11 +23,16 @@ export default defineConfig(({mode}) => {
     plugins: [react()],
     build: {
       outDir: 'dist',
-      sourcemap: true,
-      commonjsOptions: {
-        include: [/node_modules/],
-        transformMixedEsModules: true,
-        requireReturnsDefault: 'auto'
+      sourcemap: false,
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            firebase: ['firebase/app', 'firebase/database'],
+            maps: ['@vis.gl/react-google-maps', '@googlemaps/markerclusterer']
+          }
+        }
       }
     },
     define: {
@@ -39,9 +44,6 @@ export default defineConfig(({mode}) => {
         '@vis.gl/react-google-maps/examples.js':
           'https://visgl.github.io/react-google-maps/scripts/examples.js'
       }
-    },
-    optimizeDeps: {
-      include: ['react', 'react-dom', 'react/jsx-runtime']
     }
   };
 });
