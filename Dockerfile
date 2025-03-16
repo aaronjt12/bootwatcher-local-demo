@@ -8,26 +8,47 @@ RUN npm install
 COPY starter/ ./
 RUN npm run build
 
-# Production stage - using a simpler approach with a standard web server
+# Production stage - using Express.js as a static server
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Install a simple HTTP server
-RUN npm install -g serve
+# Create package.json for the server
+RUN echo '{"name":"static-server","version":"1.0.0","type":"module"}' > package.json
+
+# Install Express
+RUN npm install express compression
 
 # Copy built assets from builder stage
 COPY --from=builder /app/dist ./dist
 
+# Create a simple Express server
+RUN echo 'import express from "express";' > server.js && \
+    echo 'import path from "path";' >> server.js && \
+    echo 'import { fileURLToPath } from "url";' >> server.js && \
+    echo 'import compression from "compression";' >> server.js && \
+    echo '' >> server.js && \
+    echo 'const __dirname = path.dirname(fileURLToPath(import.meta.url));' >> server.js && \
+    echo 'const app = express();' >> server.js && \
+    echo 'const PORT = process.env.PORT || 3000;' >> server.js && \
+    echo '' >> server.js && \
+    echo '// Enable compression' >> server.js && \
+    echo 'app.use(compression());' >> server.js && \
+    echo '' >> server.js && \
+    echo '// Serve static files' >> server.js && \
+    echo 'app.use(express.static(path.join(__dirname, "dist")));' >> server.js && \
+    echo '' >> server.js && \
+    echo '// For SPA routing - serve index.html for all routes' >> server.js && \
+    echo 'app.get("*", (req, res) => {' >> server.js && \
+    echo '  res.sendFile(path.join(__dirname, "dist", "index.html"));' >> server.js && \
+    echo '});' >> server.js && \
+    echo '' >> server.js && \
+    echo 'app.listen(PORT, () => {' >> server.js && \
+    echo '  console.log(`Server running on port ${PORT}`);' >> server.js && \
+    echo '});'
+
 # Set environment variables
 ENV NODE_ENV=production
 
-# Create a startup script to handle the PORT environment variable
-RUN echo '#!/bin/sh' > /app/start.sh && \
-    echo 'PORT_NUMBER=${PORT:-3000}' >> /app/start.sh && \
-    echo 'echo "Starting server on port $PORT_NUMBER"' >> /app/start.sh && \
-    echo 'serve -s dist -l $PORT_NUMBER' >> /app/start.sh && \
-    chmod +x /app/start.sh
-
-# Start the server using the startup script
-CMD ["/app/start.sh"] 
+# Start the Express server
+CMD ["node", "server.js"] 
