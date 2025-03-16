@@ -23,6 +23,11 @@ FROM nginx:alpine
 # Copy built assets to nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# Configure nginx
+RUN echo "worker_processes auto;" > /etc/nginx/nginx.conf && \
+    echo "events { worker_connections 1024; }" >> /etc/nginx/nginx.conf && \
+    echo "http { include /etc/nginx/conf.d/*.conf; }" >> /etc/nginx/nginx.conf
+
 # Copy nginx configuration template
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 
