@@ -113,31 +113,44 @@ app.get("/users", async (req, res) => {
 // Example Twilio SMS sending
 app.post("/send-sms", async (req, res) => {
   try {
-    const { phoneNumbers, message } = await req.body;
-    console.log({ phoneNumbers });
+    const { phoneNumbers, message } = req.body;
+    console.log('Received request:', { phoneNumbers, message });
 
-    if (!phoneNumbers || !message) {
-      return res
-        .status(400)
-        .json({ error: "Recipient and message are required." });
+    if (!phoneNumbers || !Array.isArray(phoneNumbers) || !message) {
+      console.log('Invalid request data');
+      return res.status(400).json({ 
+        error: "Invalid request. phoneNumbers must be an array and message is required." 
+      });
     }
 
-    let result = await [];
-    await phoneNumbers?.forEach(async (element) => {
+    const results = [];
+    for (const phoneNumber of phoneNumbers) {
       try {
-        let messageResult = await client.messages.create({
+        console.log(`Sending message to ${phoneNumber}`);
+        const messageResult = await client.messages.create({
           body: message,
           from: twilioPhone,
-          to: element,
+          to: phoneNumber,
         });
-        await result?.push(messageResult);
-      } catch (error) {}
-    });
+        console.log(`Successfully sent message to ${phoneNumber}:`, messageResult.sid);
+        results.push(messageResult);
+      } catch (error) {
+        console.error(`Failed to send message to ${phoneNumber}:`, error);
+        results.push({ error: error.message, phoneNumber });
+      }
+    }
 
-    res.status(200).json({ success: true, message: "SMS sent!", result });
+    res.status(200).json({ 
+      success: true, 
+      message: "SMS processing completed", 
+      results 
+    });
   } catch (error) {
-    console.error("Error sending SMS:", error);
-    res.status(500).json({ error: "Failed to send SMS" });
+    console.error("Error in /send-sms endpoint:", error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message || "Failed to send SMS" 
+    });
   }
 });
 
