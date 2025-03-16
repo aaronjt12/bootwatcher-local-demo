@@ -13,7 +13,9 @@ RUN echo "Contents of /app:" && \
     env
 
 # Install dependencies with verbose logging
-RUN npm install --legacy-peer-deps --verbose
+RUN npm install --legacy-peer-deps --verbose && \
+    echo "Installing additional type definitions..." && \
+    npm install --save-dev @types/node @types/google.maps --verbose
 
 # Set build environment variables
 ENV NODE_ENV=production
@@ -24,6 +26,9 @@ RUN echo "TypeScript Config:" && cat tsconfig.json || echo "No tsconfig.json fou
 
 # Debug Vite configuration
 RUN echo "Vite Config:" && cat vite.config.js || echo "No vite.config.js found"
+
+# Create necessary directories
+RUN mkdir -p src/types
 
 # Build the app with detailed error logging
 RUN echo "Starting build process..." && \
@@ -37,7 +42,9 @@ RUN echo "Starting build process..." && \
         ls -la node_modules; \
         echo "3. Environment variables:"; \
         env | grep VITE_; \
-        echo "4. Build logs:"; \
+        echo "4. TypeScript version:"; \
+        npx tsc --version; \
+        echo "5. Build logs:"; \
         npm run build --verbose; \
         exit 1; \
     }
