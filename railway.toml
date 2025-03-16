@@ -1,6 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = "cd starter && npm install --omit=dev && npm run build"
+buildCommand = "cd starter && npm ci && npm run build"
 
 [deploy]
 startCommand = "cd starter && npm run preview"
