@@ -8,74 +8,46 @@ RUN npm install
 COPY starter/ ./
 RUN npm run build
 
-# Production stage - using Express.js as a static server
+# Production stage - using a simpler approach
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Create package.json for the server
-COPY <<EOF /app/package.json
-{
-  "name": "static-server",
-  "version": "1.0.0",
-  "type": "module"
-}
-EOF
-
-# Install Express
-RUN npm install express compression
+# Create a simple server package
+RUN npm init -y && \
+    npm install express compression
 
 # Copy built assets from builder stage
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/dist ./public
 
-# Create a simple Express server
-COPY <<EOF /app/server.js
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import compression from 'compression';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const app = express();
-
-// Use the PORT environment variable provided by Railway, or default to 3000
-const PORT = process.env.PORT || 3000;
-
-// Log environment for debugging
-console.log('Environment variables:', process.env);
-console.log('Current directory:', __dirname);
-console.log('Using PORT:', PORT);
-console.log('Files in dist directory:');
-try {
-  console.log(require('fs').readdirSync(path.join(__dirname, 'dist')));
-} catch (err) {
-  console.error('Error reading dist directory:', err);
-}
-
-// Enable compression
-app.use(compression());
-
-// Health check endpoint for Railway
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
-});
-
-// Serve static files
-app.use(express.static(path.join(__dirname, 'dist')));
-
-// For SPA routing - serve index.html for all routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log('Health check available at /health');
-});
-EOF
-
-# Set environment variables
-ENV NODE_ENV=production
+# Create a simple Express server file
+RUN echo 'const express = require("express");' > server.js && \
+    echo 'const path = require("path");' >> server.js && \
+    echo 'const compression = require("compression");' >> server.js && \
+    echo '' >> server.js && \
+    echo 'const app = express();' >> server.js && \
+    echo 'const PORT = process.env.PORT || 3000;' >> server.js && \
+    echo '' >> server.js && \
+    echo 'console.log(`Starting server with PORT=${PORT}`);' >> server.js && \
+    echo '' >> server.js && \
+    echo 'app.use(compression());' >> server.js && \
+    echo '' >> server.js && \
+    echo '// Health check endpoint' >> server.js && \
+    echo 'app.get("/health", (req, res) => {' >> server.js && \
+    echo '  res.status(200).send("OK");' >> server.js && \
+    echo '});' >> server.js && \
+    echo '' >> server.js && \
+    echo '// Serve static files' >> server.js && \
+    echo 'app.use(express.static(path.join(__dirname, "public")));' >> server.js && \
+    echo '' >> server.js && \
+    echo '// For SPA routing' >> server.js && \
+    echo 'app.get("*", (req, res) => {' >> server.js && \
+    echo '  res.sendFile(path.join(__dirname, "public", "index.html"));' >> server.js && \
+    echo '});' >> server.js && \
+    echo '' >> server.js && \
+    echo 'app.listen(PORT, "0.0.0.0", () => {' >> server.js && \
+    echo '  console.log(`Server running on http://0.0.0.0:${PORT}`);' >> server.js && \
+    echo '});'
 
 # Start the Express server
 CMD ["node", "server.js"] 
