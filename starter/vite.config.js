@@ -20,13 +20,27 @@ export default defineConfig(({mode}) => {
   const {GOOGLE_MAPS_API_KEY = ''} = loadEnv(mode, process.cwd(), '');
 
   return {
-    plugins: [react()],
+    plugins: [
+      react({
+        jsxRuntime: 'automatic',
+        jsxImportSource: 'react'
+      })
+    ],
     build: {
       outDir: 'dist',
       sourcemap: true,
       commonjsOptions: {
         include: [/node_modules/],
+        transformMixedEsModules: true
       },
+      rollupOptions: {
+        external: ['react/jsx-runtime'],
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom']
+          }
+        }
+      }
     },
     define: {
       'process.env.GOOGLE_MAPS_API_KEY': JSON.stringify(GOOGLE_MAPS_API_KEY)
@@ -36,6 +50,9 @@ export default defineConfig(({mode}) => {
         '@vis.gl/react-google-maps/examples.js':
           'https://visgl.github.io/react-google-maps/scripts/examples.js'
       }
+    },
+    optimizeDeps: {
+      include: ['react', 'react-dom']
     }
   };
 });

@@ -1,6 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = "cd starter && npm install && npm run build"
+buildCommand = "cd starter && NODE_ENV=production npm install && npm run build"
 
 [deploy]
 startCommand = "cd starter && npm run preview"

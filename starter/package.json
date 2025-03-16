@@ -13,9 +13,9 @@
   "scripts": {
     "start": "vite",
     "start-local": "vite --config ./vite.config.local.js",
-    "build": "vite build --mode production",
+    "build": "NODE_ENV=production vite build",
     "preview": "vite preview",
-    "vercel-build": "vite build --mode production"
+    "vercel-build": "NODE_ENV=production vite build"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
