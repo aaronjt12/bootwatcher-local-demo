@@ -22,5 +22,12 @@ COPY --from=builder /app/dist ./dist
 # Set environment variables
 ENV NODE_ENV=production
 
-# Start the server using the PORT environment variable
-CMD serve -s dist -l ${PORT:-3000} 
+# Create a startup script to handle the PORT environment variable
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'PORT_NUMBER=${PORT:-3000}' >> /app/start.sh && \
+    echo 'echo "Starting server on port $PORT_NUMBER"' >> /app/start.sh && \
+    echo 'serve -s dist -l $PORT_NUMBER' >> /app/start.sh && \
+    chmod +x /app/start.sh
+
+# Start the server using the startup script
+CMD ["/app/start.sh"] 
