@@ -6,7 +6,7 @@ const fs = require('fs');
 const app = express();
 
 // Railway typically sets PORT to a specific value
-const PORT = process.env.PORT || process.env.RAILWAY_PORT || 3000;
+const PORT = process.env.PORT || process.env.RAILWAY_PORT || 8080;
 
 // Print all environment variables for debugging
 console.log('All environment variables:');
