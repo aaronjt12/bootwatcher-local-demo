@@ -32,6 +32,9 @@ interface Location {
   lng: number;
 }
 
+// Log environment variables for debugging
+console.log('Maps API Key:', import.meta.env.VITE_MAPS_API_KEY);
+
 const App = () => {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
 
@@ -44,10 +47,14 @@ const App = () => {
         },
         (error) => {
           console.error("Error getting user location:", error);
+          // Default to a location if geolocation fails
+          setUserLocation({ lat: 37.7749, lng: -122.4194 }); // San Francisco
         }
       );
     } else {
       console.log("Geolocation is not supported by this browser.");
+      // Default to a location if geolocation is not supported
+      setUserLocation({ lat: 37.7749, lng: -122.4194 }); // San Francisco
     }
   }, []);
 
@@ -60,9 +67,12 @@ const App = () => {
     );
   };
 
+  // Use a default API key if the environment variable is not set
+  const mapsApiKey = import.meta.env.VITE_MAPS_API_KEY || "AIzaSyDOCAbC123dEf456GhI789jKl01-MnO";
+
   return (
     <APIProvider
-      apiKey={import.meta.env.VITE_MAPS_API_KEY}
+      apiKey={mapsApiKey}
       library={["places"]}
       onLoad={() => console.log("Maps API has loaded.")}
     >
