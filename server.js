@@ -38,6 +38,11 @@ app.get('/debug', (req, res) => {
   res.json(debug);
 });
 
+// Error route - serve the error page for specific error paths
+app.get('/error', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'error.html'));
+});
+
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -52,5 +57,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('Available routes:');
   console.log('- /health - Health check endpoint');
   console.log('- /debug - Debug information');
+  console.log('- /error - Error page');
   console.log('- /* - Static files and SPA routing');
 }); 

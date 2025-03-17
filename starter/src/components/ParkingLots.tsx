@@ -17,15 +17,15 @@ import {
 } from "firebase/database";
 import axios from "axios";
 
-// Firebase configuration
+// Firebase configuration with proper database URL
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDOCAbC123dEf456GhI789jKl01-MnO",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "bootwatcher-demo.firebaseapp.com",
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || "https://bootwatcher-demo-default-rtdb.firebaseio.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "bootwatcher-demo",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "bootwatcher-demo.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789012",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789012:web:abc123def456",
+  apiKey: "AIzaSyCR5TmTpYUEo2ozdmbyGV1VYj1Exhqmlk0",
+  authDomain: "bootwatcher-demo.firebaseapp.com",
+  databaseURL: "https://bootwatcher-demo-default-rtdb.firebaseio.com",
+  projectId: "bootwatcher-demo",
+  storageBucket: "bootwatcher-demo.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abc123def456",
 };
 
 console.log('ParkingLots Firebase config:', firebaseConfig);

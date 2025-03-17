@@ -37,6 +37,7 @@ console.log('Maps API Key:', import.meta.env.VITE_MAPS_API_KEY);
 
 const App = () => {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
+  const [mapsError, setMapsError] = useState<boolean>(false);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -56,6 +57,21 @@ const App = () => {
       // Default to a location if geolocation is not supported
       setUserLocation({ lat: 37.7749, lng: -122.4194 }); // San Francisco
     }
+
+    // Add a global error handler for Google Maps
+    const originalConsoleError = console.error;
+    console.error = function(...args) {
+      const errorMessage = args.join(' ');
+      if (errorMessage.includes('Google Maps JavaScript API') || 
+          errorMessage.includes('InvalidKeyMapError')) {
+        setMapsError(true);
+      }
+      originalConsoleError.apply(console, args);
+    };
+
+    return () => {
+      console.error = originalConsoleError;
+    };
   }, []);
 
   const handleCameraChange = (ev: { detail: MapCameraChangedEvent }) => {
@@ -67,8 +83,44 @@ const App = () => {
     );
   };
 
-  // Use a default API key if the environment variable is not set
-  const mapsApiKey = import.meta.env.VITE_MAPS_API_KEY || "AIzaSyDOCAbC123dEf456GhI789jKl01-MnO";
+  // Use the provided API key
+  const mapsApiKey = "AIzaSyCR5TmTpYUEo2ozdmbyGV1VYj1Exhqmlk0";
+
+  // Fallback UI when Maps API fails to load
+  if (mapsError) {
+    return (
+      <div style={{ 
+        padding: "20px", 
+        textAlign: "center", 
+        maxWidth: "600px", 
+        margin: "0 auto",
+        fontFamily: "Arial, sans-serif"
+      }}>
+        <h2>Google Maps could not be loaded</h2>
+        <p>We're having trouble loading the map. This could be due to:</p>
+        <ul style={{ textAlign: "left" }}>
+          <li>An invalid or missing Google Maps API key</li>
+          <li>Network connectivity issues</li>
+          <li>Temporary service disruption</li>
+        </ul>
+        <p>Please try again later or contact support if the problem persists.</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#4285F4",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "16px"
+          }}
+        >
+          Reload Page
+        </button>
+      </div>
+    );
+  }
 
   return (
     <APIProvider
