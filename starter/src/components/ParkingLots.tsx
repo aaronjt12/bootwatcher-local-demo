@@ -17,26 +17,16 @@ import {
 } from "firebase/database";
 import axios from "axios";
 
-// Get environment variables from window.env or import.meta.env
-const getEnv = (key: string): string => {
-  if (window.env && window.env[key]) {
-    return window.env[key];
-  }
-  return import.meta.env[key] || "";
-};
-
-// Firebase configuration with proper database URL from environment variables
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: getEnv('VITE_FIREBASE_API_KEY'),
-  authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN') || "bootwatcher-demo.firebaseapp.com",
-  databaseURL: getEnv('VITE_FIREBASE_DATABASE_URL') || "https://bootwatcher-demo-default-rtdb.firebaseio.com",
-  projectId: getEnv('VITE_FIREBASE_PROJECT_ID') || "bootwatcher-demo",
-  storageBucket: getEnv('VITE_FIREBASE_STORAGE_BUCKET') || "bootwatcher-demo.appspot.com",
-  messagingSenderId: getEnv('VITE_FIREBASE_MESSAGING_SENDER_ID') || "123456789012",
-  appId: getEnv('VITE_FIREBASE_APP_ID') || "1:123456789012:web:abc123def456",
+  apiKey: import.meta.env.VITE_API_KEY,
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_DATABASE_URL,
+  projectId: import.meta.env.VITE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_APP_ID,
 };
-
-console.log('ParkingLots Firebase config:', firebaseConfig);
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -52,8 +42,8 @@ type Poi = {
   name?: string;
 };
 
-// Twilio configuration
-const TWILIO_URL = `${import.meta.env.VITE_BACKEND_URL}/send-sms`;
+// Twilio configuration - simplified
+const TWILIO_URL = 'http://localhost:3000/send-sms';
 
 // ParkingLots Component
 const ParkingLots = ({ userLocation }) => {
@@ -376,17 +366,21 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
               return;
             }
 
+            console.log("Sending notification to:", phoneNumbers);
+            
+            // Make sure the request format matches what the server expects
             axios
               .post(TWILIO_URL, {
-                message: "Your car is being booted!",
-                parkingLot: selectedPoi.name || "Unknown",
-                phoneNumbers,
+                phoneNumbers: phoneNumbers, // Make sure this matches the server's expected parameter name
+                message: `Alert: A car is being booted at ${selectedPoi.name || "Unknown parking lot"}!`,
               })
-              .then(() => {
+              .then((response) => {
+                console.log("Notification response:", response.data);
                 alert("Notification sent successfully!");
               })
               .catch((error) => {
                 console.error("Error sending notification:", error);
+                alert("Failed to send notification. See console for details.");
               });
           } else {
             alert("No phone numbers found for this parking lot.");
