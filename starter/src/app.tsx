@@ -32,15 +32,47 @@ interface Location {
   lng: number;
 }
 
+// Add window.env type definition
+declare global {
+  interface Window {
+    env?: {
+      VITE_MAPS_API_KEY: string;
+      VITE_FIREBASE_API_KEY: string;
+      VITE_FIREBASE_AUTH_DOMAIN: string;
+      VITE_FIREBASE_DATABASE_URL: string;
+      VITE_FIREBASE_PROJECT_ID: string;
+      VITE_FIREBASE_STORAGE_BUCKET: string;
+      VITE_FIREBASE_MESSAGING_SENDER_ID: string;
+      VITE_FIREBASE_APP_ID: string;
+    };
+  }
+}
+
+// Get environment variables from window.env or import.meta.env
+const getEnv = (key: string): string => {
+  if (window.env && window.env[key]) {
+    return window.env[key];
+  }
+  return import.meta.env[key] || "";
+};
+
 // Log environment variables for debugging
-console.log('Maps API Key:', import.meta.env.VITE_MAPS_API_KEY);
+console.log('Maps API Key from env:', getEnv('VITE_MAPS_API_KEY'));
 
 const App = () => {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [mapsError, setMapsError] = useState<boolean>(false);
   const [errorDetails, setErrorDetails] = useState<string>("");
+  const [errorType, setErrorType] = useState<string>("");
+  const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
 
   useEffect(() => {
+    // Immediately redirect to the maps-error page if the URL contains the Railway domain
+    if (window.location.origin.includes('railway.app')) {
+      window.location.href = '/maps-error';
+      return;
+    }
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -70,20 +102,47 @@ const App = () => {
         
         // Extract more detailed error information
         if (errorMessage.includes('RefererNotAllowedMapError')) {
+          setErrorType("RefererNotAllowedMapError");
           setErrorDetails("The current domain is not authorized to use this Google Maps API key. Please add this domain to the allowed referrers in the Google Cloud Console.");
+          
+          // Redirect to the maps-error page immediately
+          window.location.href = '/maps-error';
         } else if (errorMessage.includes('InvalidKeyMapError')) {
+          setErrorType("InvalidKeyMapError");
           setErrorDetails("The Google Maps API key is invalid or has expired.");
         } else {
+          setErrorType("GoogleMapsError");
           setErrorDetails("There was an error loading Google Maps.");
         }
       }
       originalConsoleError.apply(console, args);
     };
 
+    // Add a global error handler for uncaught errors
+    const handleUncaughtError = (event) => {
+      if (event.error && !isMapLoaded) {
+        const errorMessage = event.error.toString();
+        if (errorMessage.includes('Cannot read properties of undefined') || 
+            errorMessage.includes('getRootNode') ||
+            errorMessage.includes('hasAttribute')) {
+          // These errors are likely related to the Maps API failing to load
+          event.preventDefault();
+          if (!mapsError) {
+            setMapsError(true);
+            setErrorType("GoogleMapsError");
+            setErrorDetails("There was an error loading Google Maps components.");
+          }
+        }
+      }
+    };
+
+    window.addEventListener('error', handleUncaughtError);
+
     return () => {
       console.error = originalConsoleError;
+      window.removeEventListener('error', handleUncaughtError);
     };
-  }, []);
+  }, [isMapLoaded, mapsError]);
 
   const handleCameraChange = (ev: { detail: MapCameraChangedEvent }) => {
     console.log(
@@ -94,8 +153,8 @@ const App = () => {
     );
   };
 
-  // Use the provided API key
-  const mapsApiKey = "AIzaSyCR5TmTpYUEo2ozdmbyGV1VYj1Exhqmlk0";
+  // Get the API key from environment variables
+  const mapsApiKey = getEnv('VITE_MAPS_API_KEY');
 
   // Fallback UI when Maps API fails to load
   if (mapsError) {
@@ -109,47 +168,73 @@ const App = () => {
       }}>
         <h2>Google Maps could not be loaded</h2>
         <p>{errorDetails || "We're having trouble loading the map."}</p>
-        <p>This could be due to:</p>
-        <ul style={{ textAlign: "left" }}>
-          <li>An invalid or missing Google Maps API key</li>
-          <li>The current domain not being authorized for this API key</li>
-          <li>Network connectivity issues</li>
-          <li>Temporary service disruption</li>
-        </ul>
-        <div style={{ 
-          backgroundColor: "#f8f9fa", 
-          padding: "15px", 
-          borderRadius: "5px", 
-          marginTop: "20px",
-          textAlign: "left" 
-        }}>
-          <p><strong>For developers:</strong></p>
-          <p>If you're seeing a "RefererNotAllowedMapError", you need to add this domain to the allowed referrers in the Google Cloud Console:</p>
-          <code style={{ 
-            display: "block", 
-            padding: "10px", 
-            backgroundColor: "#e9ecef", 
-            borderRadius: "4px",
-            wordBreak: "break-all"
-          }}>
-            {window.location.origin}
-          </code>
-        </div>
-        <button 
-          onClick={() => window.location.reload()} 
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#4285F4",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "16px",
-            marginTop: "20px"
-          }}
-        >
-          Reload Page
-        </button>
+        
+        {errorType === "RefererNotAllowedMapError" && (
+          <p>Redirecting to detailed instructions page...</p>
+        )}
+        
+        {errorType !== "RefererNotAllowedMapError" && (
+          <>
+            <p>This could be due to:</p>
+            <ul style={{ textAlign: "left" }}>
+              <li>An invalid or missing Google Maps API key</li>
+              <li>The current domain not being authorized for this API key</li>
+              <li>Network connectivity issues</li>
+              <li>Temporary service disruption</li>
+            </ul>
+            <div style={{ 
+              backgroundColor: "#f8f9fa", 
+              padding: "15px", 
+              borderRadius: "5px", 
+              marginTop: "20px",
+              textAlign: "left" 
+            }}>
+              <p><strong>For developers:</strong></p>
+              <p>If you're seeing a "RefererNotAllowedMapError", you need to add this domain to the allowed referrers in the Google Cloud Console:</p>
+              <code style={{ 
+                display: "block", 
+                padding: "10px", 
+                backgroundColor: "#e9ecef", 
+                borderRadius: "4px",
+                wordBreak: "break-all"
+              }}>
+                {window.location.origin}
+              </code>
+              <p>Or visit our <a href="/maps-error" style={{ color: "#1a73e8", textDecoration: "none" }}>detailed instructions page</a>.</p>
+            </div>
+            <button 
+              onClick={() => window.location.href = '/maps-error'} 
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#4285F4",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "16px",
+                marginTop: "20px",
+                marginRight: "10px"
+              }}
+            >
+              View Instructions
+            </button>
+            <button 
+              onClick={() => window.location.reload()} 
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#34A853",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "16px",
+                marginTop: "20px"
+              }}
+            >
+              Reload Page
+            </button>
+          </>
+        )}
       </div>
     );
   }
@@ -158,7 +243,10 @@ const App = () => {
     <APIProvider
       apiKey={mapsApiKey}
       library={["places"]}
-      onLoad={() => console.log("Maps API has loaded.")}
+      onLoad={() => {
+        console.log("Maps API has loaded.");
+        setIsMapLoaded(true);
+      }}
     >
       {userLocation ? (
         <Map

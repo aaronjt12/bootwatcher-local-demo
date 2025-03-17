@@ -17,15 +17,23 @@ import {
 } from "firebase/database";
 import axios from "axios";
 
-// Firebase configuration with proper database URL
+// Get environment variables from window.env or import.meta.env
+const getEnv = (key: string): string => {
+  if (window.env && window.env[key]) {
+    return window.env[key];
+  }
+  return import.meta.env[key] || "";
+};
+
+// Firebase configuration with proper database URL from environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyCR5TmTpYUEo2ozdmbyGV1VYj1Exhqmlk0",
-  authDomain: "bootwatcher-demo.firebaseapp.com",
-  databaseURL: "https://bootwatcher-demo-default-rtdb.firebaseio.com",
-  projectId: "bootwatcher-demo",
-  storageBucket: "bootwatcher-demo.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abc123def456",
+  apiKey: getEnv('VITE_FIREBASE_API_KEY'),
+  authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN') || "bootwatcher-demo.firebaseapp.com",
+  databaseURL: getEnv('VITE_FIREBASE_DATABASE_URL') || "https://bootwatcher-demo-default-rtdb.firebaseio.com",
+  projectId: getEnv('VITE_FIREBASE_PROJECT_ID') || "bootwatcher-demo",
+  storageBucket: getEnv('VITE_FIREBASE_STORAGE_BUCKET') || "bootwatcher-demo.appspot.com",
+  messagingSenderId: getEnv('VITE_FIREBASE_MESSAGING_SENDER_ID') || "123456789012",
+  appId: getEnv('VITE_FIREBASE_APP_ID') || "1:123456789012:web:abc123def456",
 };
 
 console.log('ParkingLots Firebase config:', firebaseConfig);
