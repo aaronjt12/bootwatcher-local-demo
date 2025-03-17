@@ -42,8 +42,8 @@ type Poi = {
   name?: string;
 };
 
-// Twilio configuration - simplified
-const TWILIO_URL = 'http://localhost:3000/send-sms';
+// Twilio configuration
+const TWILIO_URL = `${import.meta.env.VITE_BACKEND_URL}/send-sms`;
 
 // ParkingLots Component
 const ParkingLots = ({ userLocation }) => {
@@ -366,21 +366,17 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
               return;
             }
 
-            console.log("Sending notification to:", phoneNumbers);
-            
-            // Make sure the request format matches what the server expects
             axios
               .post(TWILIO_URL, {
-                phoneNumbers: phoneNumbers, // Make sure this matches the server's expected parameter name
-                message: `Alert: A car is being booted at ${selectedPoi.name || "Unknown parking lot"}!`,
+                message: "Your car is being booted!",
+                parkingLot: selectedPoi.name || "Unknown",
+                phoneNumbers,
               })
-              .then((response) => {
-                console.log("Notification response:", response.data);
+              .then(() => {
                 alert("Notification sent successfully!");
               })
               .catch((error) => {
                 console.error("Error sending notification:", error);
-                alert("Failed to send notification. See console for details.");
               });
           } else {
             alert("No phone numbers found for this parking lot.");

@@ -14,53 +14,31 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { createRoot } from "react-dom/client";
 
 import {
   APIProvider,
   Map,
+  useMap,
   AdvancedMarker,
   MapCameraChangedEvent,
+  Pin,
 } from "@vis.gl/react-google-maps";
 
+import { MarkerClusterer } from "@googlemaps/markerclusterer";
+import type { Marker } from "@googlemaps/markerclusterer";
+
+import { Circle } from "./components/circle";
 import ParkingLots from "./components/ParkingLots";
 import NoLocationFound from "./components/NoLocationFound";
 
-interface Location {
-  lat: number;
-  lng: number;
-}
 
-// Add window.env type definition
-declare global {
-  interface Window {
-    env?: {
-      VITE_MAPS_API_KEY: string;
-      VITE_FIREBASE_API_KEY: string;
-      VITE_FIREBASE_AUTH_DOMAIN: string;
-      VITE_FIREBASE_DATABASE_URL: string;
-      VITE_FIREBASE_PROJECT_ID: string;
-      VITE_FIREBASE_STORAGE_BUCKET: string;
-      VITE_FIREBASE_MESSAGING_SENDER_ID: string;
-      VITE_FIREBASE_APP_ID: string;
-    };
-  }
-}
 
-// Simple function to get API key from environment
-const getMapsApiKey = (): string => {
-  // First try window.env (for production)
-  if (window.env && window.env.VITE_MAPS_API_KEY) {
-    return window.env.VITE_MAPS_API_KEY;
-  }
-  // Then try import.meta.env (for development)
-  return import.meta.env.VITE_MAPS_API_KEY || "AIzaSyCR5TmTpYUEo2ozdmbyGV1VYj1Exhqmlk0";
-};
+type Poi = { key: string; location: google.maps.LatLngLiteral };
 
 const App = () => {
-  const [userLocation, setUserLocation] = useState<Location | null>(null);
-
+  const [userLocation, setUserLocation] = useState(null);
   // Get the user's current location using geolocation API
   useEffect(() => {
     if (navigator.geolocation) {
@@ -71,20 +49,16 @@ const App = () => {
         },
         (error) => {
           console.error("Error getting user location:", error);
-          // Default to a location if geolocation fails
-          setUserLocation({ lat: 37.7749, lng: -122.4194 }); // San Francisco
         }
       );
     } else {
       console.log("Geolocation is not supported by this browser.");
-      // Default to a location if geolocation is not supported
-      setUserLocation({ lat: 37.7749, lng: -122.4194 }); // San Francisco
     }
   }, []);
 
   return (
     <APIProvider
-      apiKey={getMapsApiKey()}
+      apiKey={import.meta.env.VITE_MAPS_API_KEY}
       library={["places"]}
       onLoad={() => console.log("Maps API has loaded.")}
     >
@@ -92,7 +66,7 @@ const App = () => {
         <Map
           defaultZoom={13}
           defaultCenter={userLocation}
-          onCameraChanged={(ev: { detail: MapCameraChangedEvent }) =>
+          onCameraChanged={(ev: MapCameraChangedEvent) =>
             console.log(
               "camera changed:",
               ev.detail.center,
@@ -104,13 +78,16 @@ const App = () => {
         >
           <AdvancedMarker position={userLocation}>
             <img
-              src="/images/pin_8668861.png"
+              src={"/images/pin_8668861.png"}
               width={34}
               height={34}
               title="Current Location"
             />
           </AdvancedMarker>
+          {/* load marking lots */}
           <ParkingLots userLocation={userLocation} />
+
+          {/* <PoiMarkers pois={locations} /> */}
         </Map>
       ) : (
         <NoLocationFound />
@@ -121,8 +98,5 @@ const App = () => {
 
 export default App;
 
-const container = document.getElementById("app");
-if (container) {
-  const root = createRoot(container);
-  root.render(<App />);
-}
+const root = createRoot(document.getElementById("app"));
+root.render(<App />);
