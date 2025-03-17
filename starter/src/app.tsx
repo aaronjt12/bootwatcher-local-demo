@@ -38,6 +38,7 @@ console.log('Maps API Key:', import.meta.env.VITE_MAPS_API_KEY);
 const App = () => {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [mapsError, setMapsError] = useState<boolean>(false);
+  const [errorDetails, setErrorDetails] = useState<string>("");
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -63,8 +64,18 @@ const App = () => {
     console.error = function(...args) {
       const errorMessage = args.join(' ');
       if (errorMessage.includes('Google Maps JavaScript API') || 
-          errorMessage.includes('InvalidKeyMapError')) {
+          errorMessage.includes('InvalidKeyMapError') ||
+          errorMessage.includes('RefererNotAllowedMapError')) {
         setMapsError(true);
+        
+        // Extract more detailed error information
+        if (errorMessage.includes('RefererNotAllowedMapError')) {
+          setErrorDetails("The current domain is not authorized to use this Google Maps API key. Please add this domain to the allowed referrers in the Google Cloud Console.");
+        } else if (errorMessage.includes('InvalidKeyMapError')) {
+          setErrorDetails("The Google Maps API key is invalid or has expired.");
+        } else {
+          setErrorDetails("There was an error loading Google Maps.");
+        }
       }
       originalConsoleError.apply(console, args);
     };
@@ -97,13 +108,33 @@ const App = () => {
         fontFamily: "Arial, sans-serif"
       }}>
         <h2>Google Maps could not be loaded</h2>
-        <p>We're having trouble loading the map. This could be due to:</p>
+        <p>{errorDetails || "We're having trouble loading the map."}</p>
+        <p>This could be due to:</p>
         <ul style={{ textAlign: "left" }}>
           <li>An invalid or missing Google Maps API key</li>
+          <li>The current domain not being authorized for this API key</li>
           <li>Network connectivity issues</li>
           <li>Temporary service disruption</li>
         </ul>
-        <p>Please try again later or contact support if the problem persists.</p>
+        <div style={{ 
+          backgroundColor: "#f8f9fa", 
+          padding: "15px", 
+          borderRadius: "5px", 
+          marginTop: "20px",
+          textAlign: "left" 
+        }}>
+          <p><strong>For developers:</strong></p>
+          <p>If you're seeing a "RefererNotAllowedMapError", you need to add this domain to the allowed referrers in the Google Cloud Console:</p>
+          <code style={{ 
+            display: "block", 
+            padding: "10px", 
+            backgroundColor: "#e9ecef", 
+            borderRadius: "4px",
+            wordBreak: "break-all"
+          }}>
+            {window.location.origin}
+          </code>
+        </div>
         <button 
           onClick={() => window.location.reload()} 
           style={{
@@ -113,7 +144,8 @@ const App = () => {
             border: "none",
             borderRadius: "4px",
             cursor: "pointer",
-            fontSize: "16px"
+            fontSize: "16px",
+            marginTop: "20px"
           }}
         >
           Reload Page
