@@ -38,7 +38,8 @@ import NoLocationFound from "./components/NoLocationFound";
 type Poi = { key: string; location: google.maps.LatLngLiteral };
 
 const App = () => {
-  const [userLocation, setUserLocation] = useState(null);
+  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+
   // Get the user's current location using geolocation API
   useEffect(() => {
     if (navigator.geolocation) {
