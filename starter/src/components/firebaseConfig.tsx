@@ -22,3 +22,4 @@ console.log('Firebase config:', firebaseConfig);
 const firebaseApp = initializeApp(firebaseConfig);
 
 export default firebaseApp;
+//
