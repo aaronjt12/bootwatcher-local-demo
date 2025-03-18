@@ -10,6 +10,12 @@ import NoLocationFound from "./components/NoLocationFound";
 
 type Location = { lat: number; lng: number };
 
+interface MapCameraChangedEvent {
+  center: google.maps.LatLngLiteral;
+  zoom: number;
+  bounds: google.maps.LatLngBoundsLiteral | null;
+}
+
 const App = () => {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
 
