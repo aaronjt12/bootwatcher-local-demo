@@ -57,88 +57,95 @@ const ParkingLots = ({ userLocation }) => {
   const [parkingLots, setParkingLots] = useState<Poi[]>([]);
   const [customMarkers, setCustomMarkers] = useState<Poi[]>([]);
   const [isAddingMarker, setIsAddingMarker] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   // Fetch nearby parking lots
   useEffect(() => {
-    if (!placesLib || !map) return;
+    if (!placesLib || !map || !userLocation) return;
 
-    const svc = new placesLib.PlacesService(map);
-    const location = new window.google.maps.LatLng(
-      userLocation.lat,
-      userLocation.lng
-    );
-    const request = {
-      location,
-      radius: 3000,
-      type: "parking",
-    };
+    let isComponentMounted = true;
 
-    svc.nearbySearch(request, (results, status) => {
-      if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-        const locations: Poi[] = results.map((lot) => ({
-          key: lot.place_id,
-          location: {
-            lat: lot.geometry.location.lat(),
-            lng: lot.geometry.location.lng(),
-          },
-          name: lot.name,
-        }));
-        setParkingLots(locations);
-      } else {
-        console.error("Nearby search failed:", status);
-        // If the error is due to Places API not being enabled, throw an error that will be caught by the global error handler
-        if (status === "REQUEST_DENIED") {
-          throw new Error("Places API error: ApiNotActivatedMapError");
+    const fetchParkingLots = async () => {
+      try {
+        const svc = new placesLib.PlacesService(map);
+        const location = new window.google.maps.LatLng(
+          userLocation.lat,
+          userLocation.lng
+        );
+
+        const request = {
+          location,
+          radius: 3000,
+          type: "parking",
+        };
+
+        svc.nearbySearch(request, (results, status) => {
+          if (!isComponentMounted) return;
+
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+            const locations: Poi[] = results.map((lot) => ({
+              key: lot.place_id,
+              location: {
+                lat: lot.geometry.location.lat(),
+                lng: lot.geometry.location.lng(),
+              },
+              name: lot.name || "Parking Lot",
+            }));
+            setParkingLots(locations);
+            setSearchError(null);
+          } else {
+            console.error("Nearby search failed:", status);
+            switch (status) {
+              case window.google.maps.places.PlacesServiceStatus.REQUEST_DENIED:
+                throw new Error("Places API error: ApiNotActivatedMapError");
+              case window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS:
+                setSearchError("No parking lots found in this area");
+                setParkingLots([]);
+                break;
+              case window.google.maps.places.PlacesServiceStatus.OVER_QUERY_LIMIT:
+                setSearchError("Search limit exceeded. Please try again later.");
+                break;
+              default:
+                setSearchError(`Error searching for parking lots: ${status}`);
+            }
+          }
+        });
+      } catch (error: unknown) {
+        if (!isComponentMounted) return;
+        
+        console.error("Error during nearby search:", error);
+        if (error instanceof Error && error.message.includes("ApiNotActivatedMapError")) {
+          throw error; // Rethrow to be caught by global error handler
         }
+        setSearchError("Failed to search for parking lots");
       }
-    });
-  }, [placesLib, map]);
-
-  // Load custom markers from Firebase
-  useEffect(() => {
-    const markersRef = ref(database, "customMarkers");
-    get(markersRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          const markersData = Object.entries(snapshot.val()).map(([key, value]: [string, any]) => ({
-            key,
-            location: value.location,
-            name: value.name,
-          }));
-          setCustomMarkers(markersData);
-        }
-      })
-      .catch((error) => console.error("Error loading custom markers:", error));
-  }, []);
-
-  // Add custom marker on map click
-  useEffect(() => {
-    if (!map || !isAddingMarker) return;
-
-    const handleMapClick = (e) => {
-      const newMarker = {
-        key: `${Date.now()}`, // Unique key
-        location: { lat: e.latLng.lat(), lng: e.latLng.lng() },
-        name: "Custom Parking",
-      };
-
-      // Save to Firebase
-      const markerRef = push(ref(database, "customMarkers"));
-      set(markerRef, newMarker)
-        .then(() => {
-          setCustomMarkers((prev) => [...prev, newMarker]);
-          alert("Custom parking marker added!");
-          setIsAddingMarker(false);
-        })
-        .catch((error) => console.error("Error saving custom marker:", error));
     };
 
-    map.addListener("click", handleMapClick);
+    fetchParkingLots();
 
     return () => {
-      window.google.maps.event.clearListeners(map, "click");
+      isComponentMounted = false;
     };
-  }, [map, isAddingMarker]);
+  }, [placesLib, map, userLocation]);
+
+  // Show error message if search failed
+  if (searchError) {
+    return (
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: 'white',
+        padding: '10px',
+        borderRadius: '4px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+        zIndex: 1000
+      }}>
+        <p style={{ margin: 0, color: '#d93025' }}>{searchError}</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -146,26 +153,23 @@ const ParkingLots = ({ userLocation }) => {
         onClick={() => setIsAddingMarker(!isAddingMarker)}
         style={{
           position: "absolute",
-          top: "20px", // Adjust the vertical position
-          right: "2%", // Center the button horizontally
-          
+          top: "20px",
+          right: "2%",
           padding: "5px 5px",
           backgroundColor: isAddingMarker ? "red" : "blue",
           color: "white",
           border: "none",
           borderRadius: "4px",
           cursor: "pointer",
-          zIndex: 1000, // Ensure it stays above other map elements
+          zIndex: 1000,
         }}
       >
         {isAddingMarker ? "Cancel Add Marker" : "Add Custom Marker"}
       </button>
-      <PoiMarkers pois={[...parkingLots, ...customMarkers]} />
+      {parkingLots.length > 0 && <PoiMarkers pois={[...parkingLots, ...customMarkers]} />}
     </>
   );
 };
-
-
 
 // Popup Component
 const Popup = ({
@@ -254,6 +258,7 @@ const Popup = ({
     </button>
   </div>
 );
+
 // Phone Number Input Popup
 const PhoneNumberPopup = ({ onSave, onClose }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
