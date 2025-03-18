@@ -261,7 +261,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
           clickable={true}
           onClick={() => handleClick(poi)}
         >
-          <img src={'/public/images/parking_7723653.png'} width={34} height={34} title="Parking lots" />
+          <img src={'/dist/images/parking_7723653.png'} width={34} height={34} title="Parking lots" />
         </AdvancedMarker>
       ))}
       {selectedPoi && (
