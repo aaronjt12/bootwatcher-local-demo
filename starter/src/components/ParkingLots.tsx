@@ -50,6 +50,31 @@ type Poi = {
 // Twilio configuration
 const TWILIO_URL = `${import.meta.env.VITE_BACKEND_URL}/send-sms`;
 
+// Define types for Places API
+interface PlacesSearchResult {
+  place_id: string;
+  name?: string;
+  geometry?: {
+    location: {
+      lat: () => number;
+      lng: () => number;
+    };
+  };
+  formatted_address?: string;
+  rating?: number;
+  opening_hours?: {
+    isOpen: () => boolean;
+  };
+}
+
+interface PlacesSearchResponse {
+  results: PlacesSearchResult[];
+  pagination?: {
+    hasNextPage: boolean;
+    nextPage: () => void;
+  };
+}
+
 // ParkingLots Component
 const ParkingLots = ({ userLocation }) => {
   const map = useMap();
@@ -58,6 +83,8 @@ const ParkingLots = ({ userLocation }) => {
   const [customMarkers, setCustomMarkers] = useState<Poi[]>([]);
   const [isAddingMarker, setIsAddingMarker] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [showErrorDetails, setShowErrorDetails] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
   // Fetch nearby parking lots
   useEffect(() => {
@@ -67,57 +94,106 @@ const ParkingLots = ({ userLocation }) => {
 
     const fetchParkingLots = async () => {
       try {
-        const svc = new placesLib.PlacesService(map);
-        const location = new window.google.maps.LatLng(
-          userLocation.lat,
-          userLocation.lng
-        );
+        // Log initialization state
+        console.log("Places API State:", {
+          placesLib: !!placesLib,
+          map: !!map,
+          userLocation,
+          apiKey: !!import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+        });
 
+        // Create a Places service instance
+        const service = new placesLib.PlacesService(map);
+
+        // Define the search request using the new Places API format
         const request = {
-          location,
-          radius: 3000,
-          type: "parking",
+          locationBias: {
+            circle: {
+              center: { lat: userLocation.lat, lng: userLocation.lng },
+              radius: 3000 // 3km radius
+            }
+          },
+          types: ['parking'],
+          fields: ['place_id', 'name', 'geometry', 'formatted_address', 'rating', 'opening_hours'],
+          language: 'en'
         };
 
-        svc.nearbySearch(request, (results, status) => {
-          if (!isComponentMounted) return;
-
-          if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
-            const locations: Poi[] = results.map((lot) => ({
-              key: lot.place_id,
-              location: {
-                lat: lot.geometry.location.lat(),
-                lng: lot.geometry.location.lng(),
-              },
-              name: lot.name || "Parking Lot",
-            }));
-            setParkingLots(locations);
-            setSearchError(null);
-          } else {
-            console.error("Nearby search failed:", status);
-            switch (status) {
-              case window.google.maps.places.PlacesServiceStatus.REQUEST_DENIED:
-                throw new Error("Places API error: ApiNotActivatedMapError");
-              case window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS:
-                setSearchError("No parking lots found in this area");
-                setParkingLots([]);
-                break;
-              case window.google.maps.places.PlacesServiceStatus.OVER_QUERY_LIMIT:
-                setSearchError("Search limit exceeded. Please try again later.");
-                break;
-              default:
-                setSearchError(`Error searching for parking lots: ${status}`);
-            }
-          }
+        // Log the request
+        console.log("Places API Request:", {
+          locationBias: request.locationBias,
+          types: request.types,
+          fields: request.fields
         });
+
+        // Use Promise wrapper for better error handling
+        const searchNearbyPlaces = (): Promise<PlacesSearchResponse> => {
+          return new Promise((resolve, reject) => {
+            service.search(
+              request,
+              (results, status, pagination) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                  resolve({ results, pagination });
+                } else {
+                  reject(new Error(`Places API Error: ${status}`));
+                }
+              }
+            );
+          });
+        };
+
+        const { results } = await searchNearbyPlaces();
+
+        // Log the response
+        console.log("Places API Response:", {
+          status: "OK",
+          resultsCount: results.length,
+          firstResult: results[0]
+        });
+
+        if (!isComponentMounted) return;
+
+        const locations: Poi[] = results.map((place) => ({
+          key: place.place_id,
+          location: {
+            lat: place.geometry?.location?.lat() || 0,
+            lng: place.geometry?.location?.lng() || 0,
+          },
+          name: place.name || "Parking Lot",
+          address: place.formatted_address,
+          rating: place.rating,
+          isOpen: place.opening_hours?.isOpen(),
+        }));
+
+        setParkingLots(locations);
+        setSearchError(null);
+        setDebugInfo(null);
+
       } catch (error: unknown) {
         if (!isComponentMounted) return;
         
         console.error("Error during nearby search:", error);
-        if (error instanceof Error && error.message.includes("ApiNotActivatedMapError")) {
-          throw error; // Rethrow to be caught by global error handler
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        if (errorMessage.includes('REQUEST_DENIED')) {
+          setSearchError("Access to Places API was denied");
+          setDebugInfo(`
+            Possible issues:
+            1. API key restrictions (check HTTP referrers)
+            2. Billing not enabled
+            3. API activation still propagating
+            4. API key not having Places API permission
+          `);
+        } else if (errorMessage.includes('ZERO_RESULTS')) {
+          setSearchError("No parking lots found in this area");
+          setParkingLots([]);
+        } else if (errorMessage.includes('OVER_QUERY_LIMIT')) {
+          setSearchError("Search limit exceeded. Please try again later.");
+          setDebugInfo("Check your API usage quotas in Google Cloud Console");
+        } else {
+          setSearchError("Failed to search for parking lots");
+          setDebugInfo(`Error details: ${errorMessage}`);
         }
-        setSearchError("Failed to search for parking lots");
+        setShowErrorDetails(true);
       }
     };
 
@@ -128,6 +204,13 @@ const ParkingLots = ({ userLocation }) => {
     };
   }, [placesLib, map, userLocation]);
 
+  // Update Poi type to include new fields
+  type ExtendedPoi = Poi & {
+    address?: string;
+    rating?: number;
+    isOpen?: boolean;
+  };
+
   // Show error message if search failed
   if (searchError) {
     return (
@@ -137,12 +220,32 @@ const ParkingLots = ({ userLocation }) => {
         left: '50%',
         transform: 'translateX(-50%)',
         backgroundColor: 'white',
-        padding: '10px',
-        borderRadius: '4px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-        zIndex: 1000
+        padding: '20px',
+        borderRadius: '8px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+        zIndex: 1000,
+        maxWidth: '500px',
+        width: '90%'
       }}>
-        <p style={{ margin: 0, color: '#d93025' }}>{searchError}</p>
+        <p style={{ margin: '0 0 10px 0', color: '#d93025', fontWeight: 'bold' }}>{searchError}</p>
+        {showErrorDetails && debugInfo && (
+          <div style={{ fontSize: '14px', color: '#5f6368' }}>
+            <p style={{ margin: '0 0 8px 0' }}>Debug Information:</p>
+            <pre style={{ 
+              whiteSpace: 'pre-wrap', 
+              wordWrap: 'break-word',
+              background: '#f5f5f5',
+              padding: '8px',
+              borderRadius: '4px',
+              fontSize: '12px'
+            }}>
+              {debugInfo}
+            </pre>
+            <p style={{ margin: '8px 0 0 0', fontSize: '12px' }}>
+              Check the browser console for more detailed logs
+            </p>
+          </div>
+        )}
       </div>
     );
   }
