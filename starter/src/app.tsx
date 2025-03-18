@@ -10,11 +10,11 @@ import NoLocationFound from "./components/NoLocationFound";
 
 type Location = { lat: number; lng: number };
 
-// Define the missing type
+// Updated interface with correct bounds type
 interface MapCameraChangedEvent {
   center: google.maps.LatLngLiteral;
   zoom: number;
-  bounds: google.maps.LatLngBoundsLiteral | null;
+  bounds: google.maps.LatLngBounds | null;
 }
 
 const App = () => {
