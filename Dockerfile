@@ -7,7 +7,8 @@ RUN npm install
 
 COPY starter/ ./
 
-# Build the application
+# We're not hard-coding any environment variables here
+# Let Railway provide them at runtime
 RUN npm run build
 
 # Production stage - using a simpler approach
@@ -30,4 +31,5 @@ COPY --from=builder /app/dist ./public
 EXPOSE 8080
 
 # Start the Express server
+# All environment variables from Railway will be available here
 CMD ["node", "server.js"] 
