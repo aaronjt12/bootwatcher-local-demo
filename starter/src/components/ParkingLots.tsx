@@ -51,27 +51,11 @@ type Poi = {
 const TWILIO_URL = `${import.meta.env.VITE_BACKEND_URL}/send-sms`;
 
 // Define types for Places API
-interface PlacesSearchResult {
+interface PlaceResult {
   place_id: string;
   name?: string;
-  geometry?: {
-    location: {
-      lat: () => number;
-      lng: () => number;
-    };
-  };
-  formatted_address?: string;
-  rating?: number;
-  opening_hours?: {
-    isOpen: () => boolean;
-  };
-}
-
-interface PlacesSearchResponse {
-  results: PlacesSearchResult[];
-  pagination?: {
-    hasNextPage: boolean;
-    nextPage: () => void;
+  geometry: {
+    location: google.maps.LatLng;
   };
 }
 
@@ -105,34 +89,32 @@ const ParkingLots = ({ userLocation }) => {
         // Create a Places service instance
         const service = new placesLib.PlacesService(map);
 
-        // Define the search request using the new Places API format
+        // Create location object
+        const location = new google.maps.LatLng(userLocation.lat, userLocation.lng);
+
+        // Define the search request using the legacy format
         const request = {
-          locationBias: {
-            circle: {
-              center: { lat: userLocation.lat, lng: userLocation.lng },
-              radius: 3000 // 3km radius
-            }
-          },
-          types: ['parking'],
-          fields: ['place_id', 'name', 'geometry', 'formatted_address', 'rating', 'opening_hours'],
-          language: 'en'
+          location: location,
+          radius: 3000,
+          type: 'parking'
         };
 
         // Log the request
         console.log("Places API Request:", {
-          locationBias: request.locationBias,
-          types: request.types,
-          fields: request.fields
+          lat: location.lat(),
+          lng: location.lng(),
+          radius: request.radius,
+          type: request.type
         });
 
         // Use Promise wrapper for better error handling
-        const searchNearbyPlaces = (): Promise<PlacesSearchResponse> => {
+        const searchNearbyPlaces = (): Promise<PlaceResult[]> => {
           return new Promise((resolve, reject) => {
-            service.search(
+            service.nearbySearch(
               request,
-              (results, status, pagination) => {
+              (results, status) => {
                 if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                  resolve({ results, pagination });
+                  resolve(results as PlaceResult[]);
                 } else {
                   reject(new Error(`Places API Error: ${status}`));
                 }
@@ -141,7 +123,7 @@ const ParkingLots = ({ userLocation }) => {
           });
         };
 
-        const { results } = await searchNearbyPlaces();
+        const results = await searchNearbyPlaces();
 
         // Log the response
         console.log("Places API Response:", {
@@ -155,13 +137,10 @@ const ParkingLots = ({ userLocation }) => {
         const locations: Poi[] = results.map((place) => ({
           key: place.place_id,
           location: {
-            lat: place.geometry?.location?.lat() || 0,
-            lng: place.geometry?.location?.lng() || 0,
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng(),
           },
-          name: place.name || "Parking Lot",
-          address: place.formatted_address,
-          rating: place.rating,
-          isOpen: place.opening_hours?.isOpen(),
+          name: place.name || "Parking Lot"
         }));
 
         setParkingLots(locations);
