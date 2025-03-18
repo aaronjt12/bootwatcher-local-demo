@@ -10,6 +10,7 @@ import NoLocationFound from "./components/NoLocationFound";
 
 type Location = { lat: number; lng: number };
 
+// Define the missing type
 interface MapCameraChangedEvent {
   center: google.maps.LatLngLiteral;
   zoom: number;
