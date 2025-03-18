@@ -14,31 +14,31 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import {
   APIProvider,
   Map,
-  useMap,
   AdvancedMarker,
   MapCameraChangedEvent,
-  Pin,
 } from "@vis.gl/react-google-maps";
 
-import { MarkerClusterer } from "@googlemaps/markerclusterer";
-import type { Marker } from "@googlemaps/markerclusterer";
-
-import { Circle } from "./components/circle";
 import ParkingLots from "./components/ParkingLots";
 import NoLocationFound from "./components/NoLocationFound";
 
+interface Location {
+  lat: number;
+  lng: number;
+}
 
-
-type Poi = { key: string; location: google.maps.LatLngLiteral };
+// Simple function to get API key directly from environment variables
+const getMapsApiKey = (): string => {
+  return import.meta.env.VITE_MAPS_API_KEY || "AIzaSyCR5TmTpYUEo2ozdmbyGV1VYj1Exhqmlk0";
+};
 
 const App = () => {
-  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [userLocation, setUserLocation] = useState<Location | null>(null);
 
   // Get the user's current location using geolocation API
   useEffect(() => {
@@ -59,7 +59,7 @@ const App = () => {
 
   return (
     <APIProvider
-      apiKey={import.meta.env.VITE_MAPS_API_KEY}
+      apiKey={getMapsApiKey()}
       library={["places"]}
       onLoad={() => console.log("Maps API has loaded.")}
     >
