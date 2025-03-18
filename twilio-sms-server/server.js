@@ -18,7 +18,6 @@ const serviceAccount = {
   auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_CERT_URL,
   client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
 };
-const test = process.env.ORIGIN_URL;
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
@@ -41,8 +40,11 @@ const client = twilio(twilioApiKeySid, twilioApiKeySecret, {
 const app = express();
 const database = admin.database();
 
+// Updated allowed origins to include the deployed frontend
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://localhost:5174",
+  "https://web-production-fc86.up.railway.app", // Add your deployed frontend origin
   "https://boot-watcher.vercel.app",
   "https://bootwatcher.com",
   "https://www.bootwatcher.com",
@@ -50,54 +52,43 @@ const allowedOrigins = [
   "https://bootwatcher-local-demo-kahyg9n67-aarons-projects-d1bad5c6.vercel.app",
 ];
 
-const corsOptions = {
+// CORS configuration
+app.use(cors({
   origin: function (origin, callback) {
-    // Check if the origin is in the allowed list or if there is no origin (like in some cases of server-to-server requests)
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true, // Allow credentials (cookies, authorization headers, TLS client certificates)
-};
-// Middleware
-app.use(cors(corsOptions));
-app.use(express.json()); // Parse JSON request bodies
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
+}));
 
-// // Endpoint: Send SMS using Twilio
-// app.post('/send-sms', async (req, res) => {
-//   console.log('Sending SMS:', req.body);
-//   const { recipients, message } = req.body;
+// Explicitly handle OPTIONS requests
+app.options('*', cors());
 
-//   try {
-//     if (!recipients || !Array.isArray(recipients) || !message) {
-//       return res.status(400).json({ error: 'Recipients (array) and message are required.' });
-//     }
+app.use(express.json());
 
-//     // Send SMS to all recipients
-//     const sendPromises = recipients.map((recipient) =>
-//       client.messages.create({
-//         body: message,
-//         to: recipient,
-//         from: twilioPhone,
-//       })
-//     );
+// Debugging middleware
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  console.log(`Origin: ${req.headers.origin}`);
+  console.log(`Headers: ${JSON.stringify(req.headers)}`);
+  res.on('finish', () => {
+    console.log(`Response Status: ${res.statusCode}`);
+    console.log(`Response Headers: ${JSON.stringify(res.getHeaders())}`);
+  });
+  next();
+});
 
-//     const results = await Promise.all(sendPromises);
-//     res.status(200).json({ success: true, messages: results });
-//   } catch (error) {
-//     console.error('Error sending SMS:', error.message);
-//     res.status(500).json({ success: false, error: error.message });
-//   }
-// });
-
+// Routes
 app.get("/", (req, res) => {
   res.send("Welcome to the Express.js API!");
 });
 
-// Example Firebase data retrieval
 app.get("/users", async (req, res) => {
   try {
     const usersRef = database.ref("users");
@@ -110,7 +101,6 @@ app.get("/users", async (req, res) => {
   }
 });
 
-// Example Twilio SMS sending
 app.post("/send-sms", async (req, res) => {
   try {
     const { phoneNumbers, message } = req.body;
@@ -154,12 +144,10 @@ app.post("/send-sms", async (req, res) => {
   }
 });
 
-// Example 404 handler for unknown routes
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong!" });
