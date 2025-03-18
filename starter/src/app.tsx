@@ -1,21 +1,14 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   APIProvider,
   Map,
-  useMap,
   AdvancedMarker,
-  MapCameraChangedEvent,
-  Pin,
 } from "@vis.gl/react-google-maps";
-import { MarkerClusterer } from "@googlemaps/markerclusterer";
-import type { Marker } from "@googlemaps/markerclusterer";
-import { Circle } from "./components/circle";
 import ParkingLots from "./components/ParkingLots";
 import NoLocationFound from "./components/NoLocationFound";
 
 type Location = { lat: number; lng: number };
-type Poi = { key: string; location: google.maps.LatLngLiteral };
 
 const App = () => {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
@@ -75,5 +68,9 @@ const App = () => {
 
 export default App;
 
-const root = createRoot(document.getElementById("app"));
+const appElement = document.getElementById("app");
+if (!appElement) {
+  throw new Error("Could not find element with id 'app'");
+}
+const root = createRoot(appElement);
 root.render(<App />);
