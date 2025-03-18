@@ -44,9 +44,7 @@ type Poi = {
 };
 
 // Twilio configuration
-const TWILIO_URL = import.meta.env.VITE_BACKEND_URL 
-  ? `${import.meta.env.VITE_BACKEND_URL}/send-sms` 
-  : 'https://web-production-fc86.up.railway.app/send-sms';
+const TWILIO_URL = 'http://localhost:3000/send-sms';
 
 // ParkingLots Component
 const ParkingLots = ({ userLocation }) => {

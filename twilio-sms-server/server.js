@@ -43,7 +43,6 @@ const database = admin.database();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://localhost:5174",
   "https://boot-watcher.vercel.app",
   "https://bootwatcher.com",
   "https://www.bootwatcher.com",
@@ -51,13 +50,20 @@ const allowedOrigins = [
   "https://bootwatcher-local-demo-kahyg9n67-aarons-projects-d1bad5c6.vercel.app",
 ];
 
-// Middleware
-// Replace the existing cors middleware with a more permissive one for development
-app.use(cors({
-  origin: '*', // Allow all origins
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Check if the origin is in the allowed list or if there is no origin (like in some cases of server-to-server requests)
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true
-}));
+  credentials: true, // Allow credentials (cookies, authorization headers, TLS client certificates)
+};
+// Middleware
+app.use(cors(corsOptions));
 app.use(express.json()); // Parse JSON request bodies
 
 // // Endpoint: Send SMS using Twilio
