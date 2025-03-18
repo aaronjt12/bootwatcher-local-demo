@@ -7,11 +7,31 @@ RUN npm install
 
 COPY starter/ ./
 
-# We're not hard-coding any environment variables here
-# Let Railway provide them at runtime
+# Set up ARGs for build-time environment variables
+ARG VITE_MAPS_API_KEY
+ARG VITE_FIREBASE_API_KEY
+ARG VITE_FIREBASE_AUTH_DOMAIN
+ARG VITE_FIREBASE_DATABASE_URL
+ARG VITE_FIREBASE_PROJECT_ID
+ARG VITE_FIREBASE_STORAGE_BUCKET
+ARG VITE_FIREBASE_MESSAGING_SENDER_ID
+ARG VITE_FIREBASE_APP_ID
+
+# Create .env file for build
+RUN echo "VITE_MAPS_API_KEY=${VITE_MAPS_API_KEY}" > .env \
+    && echo "VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY}" >> .env \
+    && echo "VITE_FIREBASE_AUTH_DOMAIN=${VITE_FIREBASE_AUTH_DOMAIN}" >> .env \
+    && echo "VITE_FIREBASE_DATABASE_URL=${VITE_FIREBASE_DATABASE_URL}" >> .env \
+    && echo "VITE_FIREBASE_PROJECT_ID=${VITE_FIREBASE_PROJECT_ID}" >> .env \
+    && echo "VITE_FIREBASE_STORAGE_BUCKET=${VITE_FIREBASE_STORAGE_BUCKET}" >> .env \
+    && echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID}" >> .env \
+    && echo "VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}" >> .env \
+    && cat .env
+
+# Build the application with the environment variables
 RUN npm run build
 
-# Production stage - using a simpler approach
+# Production stage
 FROM node:18-alpine
 
 WORKDIR /app
