@@ -45,8 +45,6 @@ type Poi = {
     lng: number;
   };
   name?: string;
-  rating?: number;
-  isOpen?: boolean | null;
 };
 
 // Twilio configuration
@@ -69,60 +67,32 @@ const ParkingLots = ({ userLocation }) => {
       userLocation.lat,
       userLocation.lng
     );
-    
-    // Enhanced search request with more options
     const request = {
       location,
       radius: 3000,
       type: "parking",
-      rankBy: window.google.maps.places.RankBy.DISTANCE, // Rank results by distance
-      openNow: true, // Only show parking lots that are currently open
-      fields: ['place_id', 'geometry', 'name', 'opening_hours', 'rating'], // Specify fields to retrieve
     };
 
-    try {
-      svc.nearbySearch(request, (results, status, pagination) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-          const locations: Poi[] = results.map((lot) => ({
-            key: lot.place_id,
-            location: {
-              lat: lot.geometry.location.lat(),
-              lng: lot.geometry.location.lng(),
-            },
-            name: lot.name,
-            rating: lot.rating,
-            isOpen: lot.opening_hours?.isOpen() || null,
-          }));
-          setParkingLots(locations);
-
-          // Handle pagination if there are more results
-          if (pagination && pagination.hasNextPage) {
-            pagination.nextPage();
-          }
-        } else {
-          console.error("Nearby search failed:", status);
-          switch (status) {
-            case window.google.maps.places.PlacesServiceStatus.REQUEST_DENIED:
-              throw new Error("Places API error: ApiNotActivatedMapError");
-            case window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS:
-              console.log("No parking lots found in this area");
-              setParkingLots([]);
-              break;
-            case window.google.maps.places.PlacesServiceStatus.OVER_QUERY_LIMIT:
-              console.error("Query limit exceeded");
-              break;
-            default:
-              console.error("Places API error:", status);
-          }
+    svc.nearbySearch(request, (results, status) => {
+      if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+        const locations: Poi[] = results.map((lot) => ({
+          key: lot.place_id,
+          location: {
+            lat: lot.geometry.location.lat(),
+            lng: lot.geometry.location.lng(),
+          },
+          name: lot.name,
+        }));
+        setParkingLots(locations);
+      } else {
+        console.error("Nearby search failed:", status);
+        // If the error is due to Places API not being enabled, throw an error that will be caught by the global error handler
+        if (status === "REQUEST_DENIED") {
+          throw new Error("Places API error: ApiNotActivatedMapError");
         }
-      });
-    } catch (error: unknown) {
-      console.error("Error during nearby search:", error);
-      if (error instanceof Error && error.message.includes("ApiNotActivatedMapError")) {
-        throw error; // Rethrow to be caught by global error handler
       }
-    }
-  }, [placesLib, map, userLocation]);
+    });
+  }, [placesLib, map]);
 
   // Load custom markers from Firebase
   useEffect(() => {
