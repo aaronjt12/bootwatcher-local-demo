@@ -120,8 +120,8 @@ app.get('/maps-error', (req, res) => {
               <li>Select the project that contains your Google Maps API key</li>
               <li>Find your API key in the list and click on it to edit</li>
               <li>Under "Application restrictions", select "HTTP referrers (web sites)"</li>
-              <li>Add your domain to the list of authorized referrers. For example:
-                  <pre id="domain-example">Loading...</pre>
+              <li>Add your domain to the list of authorized referrers. You need to add these entries:
+                  <pre id="domain-examples">Loading...</pre>
               </li>
               <li>Click "Save" to apply the changes</li>
           </ol>
@@ -135,7 +135,16 @@ app.get('/maps-error', (req, res) => {
       <script>
           // Display the current domain
           document.getElementById('current-domain').textContent = window.location.origin;
-          document.getElementById('domain-example').textContent = window.location.origin + '/*';
+          
+          // Display the domains to add
+          const domain = window.location.origin;
+          const domainExamples = 
+          \`${domain}/*
+${domain.replace('https://', 'http://')}/*
+${domain}/
+${domain.replace('https://', 'http://')}/\`;
+          
+          document.getElementById('domain-examples').textContent = domainExamples;
       </script>
   </body>
   </html>
