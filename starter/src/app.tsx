@@ -57,7 +57,7 @@ const App = () => {
   }, []);
   return (
     <APIProvider
-      apiKey={""}
+      apiKey={import.meta.env.VITE_MAPS_API_KEY}
       library={["places"]}
       onLoad={() => console.log("Maps API has loaded.")}
     >
