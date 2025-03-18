@@ -7,7 +7,7 @@ const getEnv = (key: string): string => {
 
 // Use environment variables for Firebase configuration
 const firebaseConfig = {
-  apiKey: getEnv('VITE_FIREBASE_API_KEY'),rtdb
+  apiKey: getEnv('VITE_FIREBASE_API_KEY'),
   authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN'),
   databaseURL: getEnv('VITE_FIREBASE_DATABASE_URL'),
   projectId: getEnv('VITE_FIREBASE_PROJECT_ID'),
