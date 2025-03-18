@@ -16,7 +16,6 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { createRoot } from "react-dom/client";
-
 import {
   APIProvider,
   Map,
@@ -25,10 +24,8 @@ import {
   MapCameraChangedEvent,
   Pin,
 } from "@vis.gl/react-google-maps";
-
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import type { Marker } from "@googlemaps/markerclusterer";
-
 import { Circle } from "./components/circle";
 import ParkingLots from "./components/ParkingLots";
 import NoLocationFound from "./components/NoLocationFound";
@@ -36,8 +33,8 @@ import NoLocationFound from "./components/NoLocationFound";
 type Poi = { key: string; location: google.maps.LatLngLiteral };
 
 const App = () => {
-  const [userLocation, setUserLocation] = useState(null);
-  // Get the user's current location using geolocation API
+  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -64,7 +61,7 @@ const App = () => {
         <Map
           defaultZoom={13}
           defaultCenter={userLocation}
-          onCameraChanged={(ev: MapCameraChangedEvent) =>
+          onCameraChanged={(ev) =>
             console.log(
               "camera changed:",
               ev.detail.center,
@@ -84,7 +81,6 @@ const App = () => {
           </AdvancedMarker>
           {/* load marking lots */}
           <ParkingLots userLocation={userLocation} />
-
           {/* <PoiMarkers pois={locations} /> */}
         </Map>
       ) : (
@@ -96,5 +92,9 @@ const App = () => {
 
 export default App;
 
-const root = createRoot(document.getElementById("app"));
+const appElement = document.getElementById("app");
+if (!appElement) {
+  throw new Error("Element with id 'app' not found in the DOM");
+}
+const root = createRoot(appElement);
 root.render(<App />);
