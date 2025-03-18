@@ -1,23 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
-import {
-  AdvancedMarker,
-  useMap,
-  useMapsLibrary,
-} from "@vis.gl/react-google-maps";
-import { initializeApp } from "firebase/app";
-import {
-  getDatabase,
-  ref,
-  push,
-  set,
-  get,
-  query,
-  orderByChild,
-  equalTo,
-} from "firebase/database";
-import axios from "axios";
+import React, { useEffect, useState, useCallback } from 'react';
+import { AdvancedMarker, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, push, set, get, query, orderByChild, equalTo } from 'firebase/database';
+import axios from 'axios';
 
-// Firebase configuration with correct environment variable names
+// Firebase configuration
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -26,6 +13,10 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
+
+
+
+  
 };
 
 console.log("Firebase config:", {
