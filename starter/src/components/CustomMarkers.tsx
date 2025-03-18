@@ -15,11 +15,9 @@ import Popup from "./Popup";
 
 // Get environment variables from window.env or import.meta.env
 const getEnv = (key: string): string => {
-  if (window.env && window.env[key]) {
-    return window.env[key];
-  }
   return import.meta.env[key] || "";
 };
+
 
 // Firebase configuration with proper database URL from environment variables
 const firebaseConfig = {

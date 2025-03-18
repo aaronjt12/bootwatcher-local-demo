@@ -63,19 +63,21 @@ const App = () => {
       onLoad={() => console.log("Maps API has loaded.")}
     >
       {userLocation ? (
-        <Map
-          defaultZoom={13}
-          defaultCenter={userLocation}
-          onCameraChanged={(ev: MapCameraChangedEvent) =>
-            console.log(
-              "camera changed:",
-              ev.detail.center,
-              "zoom:",
-              ev.detail.zoom
-            )
-          }
-          mapId="da37f3254c6a6d1c"
-        >
+       <Map
+       defaultZoom={13}
+       defaultCenter={userLocation}
+       onCameraChanged={(ev: { detail?: MapCameraChangedEvent }) => {
+         const cameraEvent = ev.detail ?? {
+           center: { lat: 0, lng: 0 },
+           zoom: 13,
+           bounds: null,
+         };
+     
+         console.log("Camera changed:", cameraEvent.center, "Zoom:", cameraEvent.zoom);
+       }}
+       mapId="da37f3254c6a6d1c"
+     >
+     
           <AdvancedMarker position={userLocation}>
             <img
               src={"/images/pin_8668861.png"}

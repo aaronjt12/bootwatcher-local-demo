@@ -2,9 +2,6 @@ import { initializeApp } from 'firebase/app';
 
 // Get environment variables from window.env or import.meta.env
 const getEnv = (key: string): string => {
-  if (window.env && window.env[key]) {
-    return window.env[key];
-  }
   return import.meta.env[key] || "";
 };
 
