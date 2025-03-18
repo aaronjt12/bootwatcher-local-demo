@@ -1,23 +1,34 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { AdvancedMarker, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
-import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, push, set, get, query, orderByChild, equalTo } from 'firebase/database';
-import axios from 'axios';
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  AdvancedMarker,
+  useMap,
+  useMapsLibrary,
+} from "@vis.gl/react-google-maps";
+import { initializeApp } from "firebase/app";
+import {
+  getDatabase,
+  ref,
+  push,
+  set,
+  get,
+  query,
+  orderByChild,
+  equalTo,
+} from "firebase/database";
+import axios from "axios";
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-
-
-
-  
+  apiKey: import.meta.env.VITE_API_KEY,
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_DATABASE_URL,
+  projectId: import.meta.env.VITE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_APP_ID,
 };
+
+
 
 console.log("Firebase config:", {
   ...firebaseConfig,
