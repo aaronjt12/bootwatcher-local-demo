@@ -34,7 +34,7 @@ interface Location {
 
 // Simple function to get API key directly from environment variables
 const getMapsApiKey = (): string => {
-  return import.meta.env.VITE_MAPS_API_KEY || "AIzaSyCR5TmTpYUEo2ozdmbyGV1VYj1Exhqmlk0";
+  return import.meta.env.VITE_MAPS_API_KEY;
 };
 
 const App = () => {
