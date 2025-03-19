@@ -90,9 +90,10 @@ const MapPage = () => {
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ element }) => {
-  return withAuthenticationRequired(() => element, {
+  const Component = withAuthenticationRequired(() => element, {
     onRedirecting: () => <div>Loading...</div>,
-  })();
+  });
+  return <Component />;
 };
 
 // Main App Component with Routing
