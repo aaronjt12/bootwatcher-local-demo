@@ -12,5 +12,9 @@
   },
   "engines": {
     "node": ">=18"
-  }
+  },
+  "devDependencies": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
