@@ -1,26 +1,38 @@
 import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, useNavigate } from 'react-router-dom';
 import { Auth0Provider } from '@auth0/auth0-react';
-import { useNavigate } from 'react-router-dom'; // For redirecting after login
+import App from './App';
 
-const AuthProvider = ({ children }) => {
+const Auth0ProviderWithHistory = ({ children }) => {
   const navigate = useNavigate();
+  const domain = process.env.REACT_APP_AUTH0_DOMAIN;
+  const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID;
+  const redirectUri = window.location.origin + '/map';
 
   const onRedirectCallback = (appState) => {
-    // Redirect to the original URL (or home) after login
-    navigate(appState?.returnTo || '/');
+    navigate(appState?.returnTo || '/map');
   };
 
   return (
     <Auth0Provider
-      domain={process.env.VITE_AUTH0_DOMAIN || "dev-qtw3oq5f0dyu07fo.us.auth0.com"}
-      clientId={process.env.VITE_AUTH0_CLIENT_ID || "rGFdjU4P5ptlPpd799QKbRfggmYH1oHk"}
-      redirectUri={window.location.origin}
-      useRefreshTokens // Optional: Enable refresh tokens for SPA
-    cacheLocation="localstorage" // Optional: Store tokens in localStorage
+      domain={domain}
+      clientId={clientId}
+      authorizationParams={{ redirect_uri: redirectUri }}
+      onRedirectCallback={onRedirectCallback}
     >
       {children}
     </Auth0Provider>
   );
 };
 
-export default AuthProvider;
+const Root = () => (
+  <BrowserRouter>
+    <Auth0ProviderWithHistory>
+      <App />
+    </Auth0ProviderWithHistory>
+  </BrowserRouter>
+);
+
+const root = createRoot(document.getElementById('root'));
+root.render(<Root />);
