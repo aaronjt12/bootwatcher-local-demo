@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
+    "@auth0/auth0-react": "^2.3.0",
     "@googlemaps/markerclusterer": "^2.5.1",
     "@vis.gl/react-google-maps": "^1.5.2",
     "axios": "^1.7.9",
