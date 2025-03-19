@@ -55,41 +55,36 @@ const App = () => {
       </div>
 
       <APIProvider
-        apiKey={import.meta.env.VITE_MAPS_API_KEY}
-        libraries={["places"]}
-        onLoad={() => console.log("Maps API has loaded.")}
+  apiKey={import.meta.env.VITE_MAPS_API_KEY}
+  onLoad={() => console.log("Maps API has loaded.")} // Remove 'libraries' prop
+>
+  {userLocation ? (
+    <div className="map-container" style={{ height: '500px', width: '100%' }}>
+      <Map
+        defaultZoom={13}
+        defaultCenter={userLocation}
+        onCameraChanged={(ev) => {
+          console.log("camera changed:", ev.detail.center, "zoom:", ev.detail.zoom);
+        }}
+        mapId="da37f3254c6a6d1c"
       >
-        {userLocation ? (
-          <div className="map-container" style={{ height: '500px', width: '100%' }}>
-          <Map
-            defaultZoom={13}
-            defaultCenter={userLocation}
-            onCameraChanged={(ev: MapCameraChangedEvent) =>
-              console.log(
-                "camera changed:",
-                ev.detail.center,
-                "zoom:",
-                ev.detail.zoom
-              )
-            }
-            mapId="da37f3254c6a6d1c"
-          >
-            <AdvancedMarker position={userLocation}>
-              <img
-                src="/images/pin_8668861.png"
-                width={34}
-                height={34}
-                title="Current Location"
-                alt="Current Location"
-              />
-            </AdvancedMarker>
-            <ParkingLots userLocation={userLocation} />
-          </Map>
-        </div>
-      ) : (
-        <NoLocationFound />
-        )}
-      </APIProvider>
+        <AdvancedMarker position={userLocation}>
+          <img
+            src="/images/pin_8668861.png"
+            width={34}
+            height={34}
+            title="Current Location"
+            alt="Current Location"
+          />
+        </AdvancedMarker>
+        <ParkingLots userLocation={userLocation} />
+      </Map>
+    </div>
+  ) : (
+    <NoLocationFound />
+  )}
+</APIProvider>
+
     </div>
   );
 };
