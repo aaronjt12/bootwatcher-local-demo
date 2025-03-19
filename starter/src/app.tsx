@@ -25,9 +25,9 @@ const LoginPage = () => {
 
 // Map Page Component (Protected)
 const MapPage = () => {
-  const [userLocation, setUserLocation] = useState(null);
+  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [isGeoLoading, setIsGeoLoading] = useState(true);
-  const { logout, user, isAuthenticated, isLoading: authLoading } = useAuth0();
+  const { logout, user, isAuthenticated, isLoading: authLoading, loginWithRedirect } = useAuth0();
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -57,7 +57,7 @@ const MapPage = () => {
         {isAuthenticated ? (
           <>
             <p>Welcome, {user?.name}!</p>
-            <button onClick={() => logout({ returnTo: window.location.origin })}>Log Out</button>
+            <button onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>Log Out</button>
           </>
         ) : (
           <button onClick={() => loginWithRedirect()}>Log In</button>
@@ -117,5 +117,9 @@ const RootApp = () => (
 );
 
 // Render the App
-const root = createRoot(document.getElementById("app"));
+const appElement = document.getElementById("app");
+if (!appElement) {
+  throw new Error("Element with id 'app' not found in the DOM");
+}
+const root = createRoot(appElement);
 root.render(<RootApp />);
