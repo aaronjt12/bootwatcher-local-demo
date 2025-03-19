@@ -22,7 +22,7 @@ export default defineConfig(({mode}) => {
   return {
     plugins: [react()],
     build: {
-      outDir: 'dist',
+      outDir: 'public',
       sourcemap: false,
       minify: 'esbuild',
       target: 'es2015'
