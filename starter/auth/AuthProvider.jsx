@@ -8,9 +8,15 @@ const Auth0ProviderWithHistory = ({ children }) => {
   const navigate = useNavigate();
   const domain = process.env.REACT_APP_AUTH0_DOMAIN;
   const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID;
-  const redirectUri = window.location.origin + '/map';
+
+  // Set the redirectUri based on the environment
+  const redirectUri =
+    process.env.NODE_ENV === 'production'
+      ? 'https://bootwatcher.com/callback' // Use a dedicated callback route in production
+      : 'http://localhost:5173/callback'; // Use localhost for development
 
   const onRedirectCallback = (appState) => {
+    // Navigate to /map after the callback is processed
     navigate(appState?.returnTo || '/map');
   };
 
