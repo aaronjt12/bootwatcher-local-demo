@@ -44,7 +44,7 @@ type Poi = {
 };
 
 // Twilio configuration
-const TWILIO_URL = 'http://localhost:3000/send-sms';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // ParkingLots Component
 const ParkingLots = ({ userLocation }) => {
@@ -359,7 +359,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
           if (snapshot.exists()) {
             const data = snapshot.val();
             const phoneNumbers = Object.values(data).map(
-              (entry: any) => entry.phoneNumber
+              (entry: any) => `+1${entry.phoneNumber}`
             );
 
             if (phoneNumbers.length === 0) {
@@ -368,7 +368,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
             }
 
             axios
-              .post(TWILIO_URL, {
+              .post(`${API_URL}/send-sms`, {
                 message: "Your car is being booted!",
                 parkingLot: selectedPoi.name || "Unknown",
                 phoneNumbers,
