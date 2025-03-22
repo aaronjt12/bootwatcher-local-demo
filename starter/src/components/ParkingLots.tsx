@@ -28,6 +28,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_APP_ID,
 };
 
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
@@ -43,7 +44,7 @@ type Poi = {
 };
 
 // Twilio configuration
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"; // Use environment variable with fallback for development
+const API_URL = 'https://sms-backend.up.railway.app';
 console.log('API_URL:', API_URL);
 
 // ParkingLots Component
@@ -140,6 +141,7 @@ const ParkingLots = ({ userLocation }) => {
           position: "absolute",
           top: "20px", // Adjust the vertical position
           right: "2%", // Center the button horizontally
+          
           padding: "5px 5px",
           backgroundColor: isAddingMarker ? "red" : "blue",
           color: "white",
@@ -155,6 +157,8 @@ const ParkingLots = ({ userLocation }) => {
     </>
   );
 };
+
+
 
 // Popup Component
 const Popup = ({
@@ -243,7 +247,6 @@ const Popup = ({
     </button>
   </div>
 );
-
 // Phone Number Input Popup
 const PhoneNumberPopup = ({ onSave, onClose }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -251,7 +254,7 @@ const PhoneNumberPopup = ({ onSave, onClose }) => {
   const handleSave = () => {
     const phoneRegex = /^[0-9]{10}$/; // Adjust for international numbers if needed
     if (!phoneRegex.test(phoneNumber)) {
-      alert("Please enter a valid phone number (10 digits).");
+      alert("Please enter a valid phone number.");
       return;
     }
     onSave(phoneNumber);
@@ -276,7 +279,7 @@ const PhoneNumberPopup = ({ onSave, onClose }) => {
         type="text"
         value={phoneNumber}
         onChange={(e) => setPhoneNumber(e.target.value)}
-        placeholder="Your phone number (e.g., 1234567890)"
+        placeholder="Your phone number"
       />
       <button onClick={handleSave}>Save</button>
       <button onClick={onClose}>Cancel</button>
@@ -287,7 +290,9 @@ const PhoneNumberPopup = ({ onSave, onClose }) => {
 // PoiMarkers Component
 const PoiMarkers = (props: { pois: Poi[] }) => {
   const map = useMap();
-  const [markers, setMarkers] = useState<{ [key: string]: google.maps.Marker }>({});
+  const [markers, setMarkers] = useState<{ [key: string]: google.maps.Marker }>(
+    {}
+  );
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null);
   const [showPhonePopup, setShowPhonePopup] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -335,7 +340,6 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
       set(newPhoneRef, phoneData)
         .then(() => {
           console.log("Phone number saved successfully");
-          setNotificationCount((prev) => prev + 1); // Increment notification count
         })
         .catch((error) => {
           console.error("Error saving phone number:", error);
@@ -343,55 +347,46 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
     }
   };
 
-  const handleSendNotification = async () => {
-    if (!selectedPoi) {
-      alert("No parking lot selected.");
-      return;
-    }
-
-    try {
+  const handleSendNotification = () => {
+    if (selectedPoi) {
       const phoneNumbersRef = query(
         ref(database, "phoneNumbers"),
         orderByChild("parkingLot"),
         equalTo(selectedPoi.name || "Unknown")
       );
 
-      const snapshot = await get(phoneNumbersRef);
-      if (!snapshot.exists()) {
-        alert("No phone numbers found for this parking lot.");
-        return;
-      }
+      get(phoneNumbersRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            const phoneNumbers = Object.values(data).map(
+              (entry: any) => `+1${entry.phoneNumber}`
+            );
 
-      const data = snapshot.val();
-      const phoneNumbers = Object.values(data).map(
-        (entry: any) => `+1${entry.phoneNumber}` // Assuming US numbers; adjust if needed
-      );
+            if (phoneNumbers.length === 0) {
+              alert("No phone numbers found for this parking lot.");
+              return;
+            }
 
-      if (phoneNumbers.length === 0) {
-        alert("No phone numbers found for this parking lot.");
-        return;
-      }
-
-      const response = await axios.post(`${API_URL}/send-sms`, {
-        message: `Your car is being booted at ${selectedPoi.name || "this parking lot"}!`,
-        parkingLot: selectedPoi.name || "Unknown",
-        phoneNumbers,
-      });
-
-      if (response.status === 200) {
-        alert("Notification sent successfully!");
-      } else {
-        alert("Failed to send notification. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error sending notification:", error);
-      if (error.response) {
-        alert(`Failed to send notification: ${error.response.data.message || "Server error"}`);
-      } else if (error.request) {
-        alert("Failed to send notification: No response from server. Check your network or backend URL.");
-      } else {
-        alert(`Failed to send notification: ${error.message}`);
-      }
+            axios
+              .post(`${API_URL}/send-sms`, {
+                message: "Your car is being booted!",
+                parkingLot: selectedPoi.name || "Unknown",
+                phoneNumbers,
+              })
+              .then(() => {
+                alert("Notification sent successfully!");
+              })
+              .catch((error) => {
+                console.error("Error sending notification:", error);
+              });
+          } else {
+            alert("No phone numbers found for this parking lot.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching phone numbers:", error);
+        });
     }
   };
 
@@ -405,7 +400,6 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
           delete updatedMarkers[key];
           return updatedMarkers;
         });
-        setCustomMarkers((prev) => prev.filter((marker) => marker.key !== key));
       })
       .catch((error) => console.error("Error deleting marker:", error));
   };
