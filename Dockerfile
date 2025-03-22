@@ -16,6 +16,7 @@ ARG VITE_FIREBASE_PROJECT_ID
 ARG VITE_FIREBASE_STORAGE_BUCKET
 ARG VITE_FIREBASE_MESSAGING_SENDER_ID
 ARG VITE_FIREBASE_APP_ID
+ARG VITE_API_URL =https://sms-backend.up.railway.app
 
 # Create .env file for build
 RUN echo "VITE_MAPS_API_KEY=${VITE_MAPS_API_KEY}" > .env \
@@ -26,6 +27,7 @@ RUN echo "VITE_MAPS_API_KEY=${VITE_MAPS_API_KEY}" > .env \
     && echo "VITE_FIREBASE_STORAGE_BUCKET=${VITE_FIREBASE_STORAGE_BUCKET}" >> .env \
     && echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID}" >> .env \
     && echo "VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}" >> .env \
+    && echo "VITE_API_URL=${VITE_API_URL}" >> .env \
     && cat .env
 
 # Build the application with the environment variables
