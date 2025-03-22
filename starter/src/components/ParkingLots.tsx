@@ -45,6 +45,7 @@ type Poi = {
 
 // Twilio configuration
 const API_URL = 'https://sms-backend.up.railway.app';
+console.log('API_URL:', API_URL);
 
 // ParkingLots Component
 const ParkingLots = ({ userLocation }) => {
