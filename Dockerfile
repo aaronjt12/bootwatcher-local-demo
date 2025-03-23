@@ -32,26 +32,3 @@ RUN echo "VITE_MAPS_API_KEY=${VITE_MAPS_API_KEY}" > .env \
 
 # Build the application with the environment variables
 RUN npm run build
-
-# Production stage
-FROM node:18-alpine
-
-WORKDIR /app
-
-# Copy package.json and server.js
-COPY package.json .
-COPY server.js .
-COPY Procfile .
-
-# Install dependencies
-RUN npm install
-
-# Copy built assets from builder stage
-COPY --from=builder /app/dist ./public
-
-# Expose port
-EXPOSE 8080
-
-# Start the Express server
-# All environment variables from Railway will be available here
-CMD ["node", "server.js"] 
