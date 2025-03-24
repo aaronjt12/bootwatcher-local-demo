@@ -44,7 +44,7 @@ type Poi = {
 };
 
 // Twilio configuration
-const API_URL = 'https://sms-backend.up.railway.app';
+const API_URL = 'http://localhost:3000'; // Replace with your actual API URL
 console.log('API_URL:', API_URL);
 
 // ParkingLots Component
