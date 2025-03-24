@@ -6,7 +6,7 @@ export const useAuth = () => {
   // Set the returnTo URL based on the environment
   const returnToUrl =
     process.env.NODE_ENV === 'production'
-      ? 'https://bootwatcher.com' // Production: Redirect to bootwatcher.com
+      ? 'https://www.bootwatcher.com' // Production: Redirect to bootwatcher.com
       : 'http://localhost:5173'; // Development: Redirect to localhost
 
   return {
