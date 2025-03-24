@@ -44,7 +44,7 @@ type Poi = {
 };
 
 // Twilio configuration
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+const API_URL = 'https://sms-backend.up.railway.app';
 console.log('API_URL:', API_URL); 
 //
 
@@ -371,7 +371,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
             }
 
             axios
-              .post(`${API_URL}/send-sms`, {
+              .post(`https://sms-backend.up.railway.app/send-sms`, {
                 message: "Your car is being booted!",
                 parkingLot: selectedPoi.name || "Unknown",
                 phoneNumbers,
