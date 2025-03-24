@@ -32,3 +32,20 @@ RUN echo "VITE_MAPS_API_KEY=${VITE_MAPS_API_KEY}" > .env \
 
 # Build the application with the environment variables
 RUN npm run build
+
+# Runtime stage
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install serve
+RUN npm install -g serve
+
+# Copy built files from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Expose the port
+EXPOSE 3000
+
+# Command to run the application
+CMD ["serve", "-s", "dist", "-l", "3000"]
