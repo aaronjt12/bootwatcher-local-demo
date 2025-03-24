@@ -1,0 +1,10 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm install && npm run build"
+
+[deploy]
+startCommand = "npx serve -s build -l 3000"
+restartPolicyType = "ON_FAILURE"
+
+[nixpacks]
+nodejs-version = "18"
