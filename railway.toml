@@ -1,0 +1,7 @@
+[build]
+builder = "DOCKERFILE"
+buildCommand = "npm install && npm run build"
+
+[deploy]
+startCommand = "npx serve -s dist -l 3000"
+restartPolicyType = "ON_FAILURE"
