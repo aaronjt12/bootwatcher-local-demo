@@ -1,26 +1,24 @@
-# Use Node.js as the base image
-FROM node:18-alpine
+# Use the official Node.js image
+FROM node:18
 
-# Set working directory in the container
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Install dependencies first (for better caching)
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
 
-# Copy the rest of the application code
+# Copy all project files
 COPY . .
 
-# Build the React app
+# Build the app
 RUN npm run build
 
-# Install a simple server to serve the static files
+# Use a lightweight web server for production
 RUN npm install -g serve
 
-# Expose the port that serve will use
+# Expose the port your app runs on
 EXPOSE 3000
 
-# Start the serve server
+# Command to run the app
 CMD ["serve", "-s", "build", "-l", "3000"]
