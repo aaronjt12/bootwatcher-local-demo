@@ -28,6 +28,7 @@ RUN echo "VITE_MAPS_API_KEY=${VITE_MAPS_API_KEY}" > .env \
     && echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID}" >> .env \
     && echo "VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}" >> .env \
     && echo "VITE_API_URL=${VITE_API_URL}" >> .env \
+    && echo "VITE_BACKEND_URL=${VITE_BACKEND_URL}" >> .env \
     && cat .env
 
 # Build the application with the environment variables
