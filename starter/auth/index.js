@@ -1,2 +1,2 @@
 export { useAuth } from './useAuth';
-export { default as AuthProvider } from './AuthProvider.jsx';
+export { AuthProvider } from './AuthProvider.jsx';
