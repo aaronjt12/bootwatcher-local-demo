@@ -14,12 +14,12 @@ const redirectUri = window.location.origin + "/map";
 
 // Login Page Component
 const LoginPage = () => {
-  const { loginWithRedirect } = useAuth();
+  const { login } = useAuth();
 
   return (
     <div style={{ textAlign: "center", marginTop: "20px" }}>
       <h2>Login</h2>
-      <button onClick={() => loginWithRedirect()}>Log In</button>
+      <button onClick={() => login()}>Log In</button>
     </div>
   );
 };
@@ -28,7 +28,7 @@ const LoginPage = () => {
 const MapPage = () => {
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [isGeoLoading, setIsGeoLoading] = useState(true);
-  const { logout, user, isAuthenticated, isLoading: authLoading, loginWithRedirect } = useAuth();
+  const { logout, user, isAuthenticated, isLoading: authLoading, login } = useAuth();
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -61,7 +61,7 @@ const MapPage = () => {
             <button onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>Log Out</button>
           </>
         ) : (
-          <button onClick={() => loginWithRedirect()}>Log In</button>
+          <button onClick={() => login()}>Log In</button>
         )}
       </div>
 
