@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { withAuthenticationRequired, Auth0Provider, useAuth0 } from "@auth0/auth0-react";
+import { withAuthenticationRequired, Auth0Provider } from "@auth0/auth0-react";
+import { useAuth } from "../auth/index";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
 import ParkingLots from "./components/ParkingLots";
 import NoLocationFound from "./components/NoLocationFound";
@@ -13,7 +14,7 @@ const redirectUri = window.location.origin + "/map";
 
 // Login Page Component
 const LoginPage = () => {
-  const { loginWithRedirect } = useAuth0();
+  const { loginWithRedirect } = useAuth();
 
   return (
     <div style={{ textAlign: "center", marginTop: "20px" }}>
@@ -27,7 +28,7 @@ const LoginPage = () => {
 const MapPage = () => {
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [isGeoLoading, setIsGeoLoading] = useState(true);
-  const { logout, user, isAuthenticated, isLoading: authLoading, loginWithRedirect } = useAuth0();
+  const { logout, user, isAuthenticated, isLoading: authLoading, loginWithRedirect } = useAuth();
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -97,7 +98,7 @@ const ProtectedRoute = ({ element }) => {
 };
 
 // Main App Component with Routing
-const App = () => {
+export const App = () => {
   return (
     <Routes>
       {/* Redirect '/' to '/login' */}
