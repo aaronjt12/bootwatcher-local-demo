@@ -9,7 +9,7 @@ const AuthProvider = ({ children }) => {
 
   const redirectUri =
     process.env.NODE_ENV === 'production'
-      ? 'https://bootwatcher.com/callback'
+      ? 'https://bootwatcher.com/map'
       : 'http://localhost:5173/callback';
 
   const onRedirectCallback = (appState) => {
