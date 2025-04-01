@@ -4,8 +4,16 @@ import { Auth0Provider } from '@auth0/auth0-react';
 
 const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
+
   const domain = process.env.REACT_APP_AUTH0_DOMAIN;
   const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID;
+
+  // Validate environment variables
+  if (!domain || !clientId) {
+    throw new Error(
+      'Auth0 configuration is missing. Please set REACT_APP_AUTH0_DOMAIN and REACT_APP_AUTH0_CLIENT_ID in your environment variables.'
+    );
+  }
 
   const redirectUri =
     process.env.NODE_ENV === 'production'
@@ -18,10 +26,10 @@ const AuthProvider = ({ children }) => {
 
   return (
     <Auth0Provider
-      domain={domain || "dev-qtw3oq5f0dyu07fo.us.auth0.com"}  // Fallback value
-      clientId={clientId || "rGFdjU4P5ptlPpd799QKbRfggmYH1oHk"}  // Fallback value
-      authorizationParams={{ 
-        redirect_uri: redirectUri || window.location.origin + "/map"  // Fallback value
+      domain={domain}
+      clientId={clientId}
+      authorizationParams={{
+        redirect_uri: redirectUri,
       }}
       onRedirectCallback={onRedirectCallback}
     >
