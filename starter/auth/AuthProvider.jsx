@@ -18,9 +18,11 @@ const AuthProvider = ({ children }) => {
 
   return (
     <Auth0Provider
-      domain={domain}
-      clientId={clientId}
-      authorizationParams={{ redirect_uri: redirectUri }}
+      domain={domain || "your-auth0-domain.auth0.com"}  // Fallback value
+      clientId={clientId || "your-client-id"}  // Fallback value
+      authorizationParams={{ 
+        redirect_uri: redirectUri || window.location.origin + "/map"  // Fallback value
+      }}
       onRedirectCallback={onRedirectCallback}
     >
       {children}
